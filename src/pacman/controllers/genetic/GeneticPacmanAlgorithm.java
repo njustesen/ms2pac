@@ -58,7 +58,7 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 					bestGenome = population.get(i);
 				}
 			}
-			System.out.println("Best: " + bestScore);
+			System.out.println("Best: " + bestScore + " - " + bestGenome);
 			Arrays.sort(clone);
 			
 			// Stop if last generation

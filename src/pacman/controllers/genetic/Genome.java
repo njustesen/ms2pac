@@ -191,7 +191,15 @@ public class Genome {
 		}
 		
 	}
-	
-	
+
+	@Override
+	public String toString() {
+		return "[pillValue=" + pillValue + ", pillMultiplier="
+				+ pillMultiplier + ", powerPillValue=" + powerPillValue
+				+ ", ghostValue=" + ghostValue + ", deathValue=" + deathValue
+				+ ", winValue=" + winValue + ", stepValue=" + stepValue
+				+ ", dangerDistance=" + dangerDistance + ", killDistance="
+				+ killDistance + "]";
+	}
 	
 }

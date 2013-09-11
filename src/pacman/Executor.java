@@ -63,9 +63,10 @@ public class Executor
 		
 		
 		//run a game in synchronous mode: game waits until controllers respond.
-		int delay=5;
+		int delay=10;
 		boolean visual=true;
-		exec.runGame(new GeneticPacman2(new Genome(10, 1.2, 0, 1000, -10000, 1000, 10, 10, 10)),new StarterGhosts(),visual,delay);
+		//[pillValue=401, pillMultiplier=-8.043920635206801, powerPillValue=-49, ghostValue=7426, deathValue=-7269, winValue=-2327, stepValue=982, dangerDistance=47, killDistance=4]
+		exec.runGame(new GeneticPacman2(new Genome(401, -8.043920635206801, -49, 7426, -7269, -2327, 982, 47, 4)),new StarterGhosts(),visual,delay);
 		//exec.runGame(new Ms2PacAstar2(),new StarterGhosts(),visual,delay);
   		
 		
