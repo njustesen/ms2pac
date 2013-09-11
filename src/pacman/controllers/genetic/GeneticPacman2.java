@@ -1,4 +1,4 @@
-package pacman.entries.pacman;
+package pacman.controllers.genetic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,8 +26,20 @@ import pacman.game.internal.Node;
  * fill in the getAction() method. Any additional classes you write should either
  * be placed in this package or sub-packages (e.g., game.entries.pacman.mypackage).
  */
-public class Ms2PacAstar2 extends Controller<MOVE>
+public class GeneticPacman2 extends Controller<MOVE>
 {
+	
+	private Genome genome;
+	
+	public GeneticPacman2(Genome genome) {
+		super();
+		this.genome = genome;
+	}
+	
+	public GeneticPacman2() {
+		super();
+		this.genome = null;
+	}
 
 	public MOVE getMove(Game game, long timeDue) 
 	{
@@ -35,18 +47,12 @@ public class Ms2PacAstar2 extends Controller<MOVE>
 		int position = game.getPacmanCurrentNodeIndex();
 		
 		int[] bestPath = {};
-		int bestValue = -1;
-		int[] junctions = game.getJunctionIndices();
+		int bestValue = -999999;
 		int[] ppills = game.getPowerPillIndices();
-		/*
-		int[] pills = game.getPillIndices();
-		*/
+
 		List<Integer> points = new ArrayList<Integer>();
 		points.addAll(getTurns(game));
-/*
-		for(int i=0; i<junctions.length;i++)
-			points.add(junctions[i]);
-	*/	
+
 		for(int i=0; i<ppills.length;i++)
 			points.add(ppills[i]);
 		
@@ -58,7 +64,7 @@ public class Ms2PacAstar2 extends Controller<MOVE>
 			points.add(game.getGhostCurrentNodeIndex(GHOST.INKY));
 		if (game.isGhostEdible(GHOST.SUE))
 			points.add(game.getGhostCurrentNodeIndex(GHOST.SUE));
-		
+		/*
 		if (game.isGhostEdible(GHOST.BLINKY) && 
 				game.isGhostEdible(GHOST.PINKY) &&
 				game.isGhostEdible(GHOST.INKY) && 
@@ -69,20 +75,28 @@ public class Ms2PacAstar2 extends Controller<MOVE>
 			points.add(game.getGhostCurrentNodeIndex(GHOST.INKY));
 			points.add(game.getGhostCurrentNodeIndex(GHOST.SUE));
 		}
-			
+			*/
+		List<Integer> values = new ArrayList<Integer>();
 		
 		for(int j : points){
 			
 			int[] path = game.getShortestPath(position, j);
 			int value = valueOfPath(game, path);
-			
-			if (value > bestValue || bestPath.length == 0){
+			values.add(value);
+			if (value > bestValue){
 				bestPath = path;
 				bestValue = value;
 			}
 			
 		}
-		
+		/*
+		System.out.print(bestValue + " [");
+		for(int i : values)
+			System.out.print(i + ",");
+		System.out.print("]");
+		System.out.println("");
+		printPath(game, position, bestPath);
+		*/
 		if (bestPath.length > 0)
 			return game.getNextMoveTowardsTarget(position, bestPath[0], DM.MANHATTAN);
 		
@@ -90,6 +104,15 @@ public class Ms2PacAstar2 extends Controller<MOVE>
 		
 	}
 	
+	private void printPath(Game game, int position, int[] path) {
+		for(int i : path){
+			MOVE m = game.getMoveToMakeToReachDirectNeighbour(position, i);
+			System.out.print(m + ",");
+			position = i;
+		}
+		System.out.println("");
+	}
+
 	private Collection<? extends Integer> getTurns(Game game) {
 		
 		List<Integer> turns = new ArrayList<Integer>();
@@ -129,16 +152,16 @@ public class Ms2PacAstar2 extends Controller<MOVE>
 		
 		int value = 0;
 		int step = 0;
-		boolean power = false;
-		int pillValue = 10;
+		boolean death = false;
+		double pillValue = genome.getPillValue();
 		if (game.getActivePillsIndices().length < 40)
-			pillValue = 20;
-		else if (game.getActivePillsIndices().length < 20)
-			pillValue = 30;
-		else if (game.getActivePillsIndices().length < 10)
-			pillValue = 40;
-		else if (game.getActivePillsIndices().length < 5)
-			pillValue = 50;
+			pillValue = pillValue * genome.getPillMultiplier();
+		if (game.getActivePillsIndices().length < 20)
+			pillValue = pillValue * genome.getPillMultiplier();
+		if (game.getActivePillsIndices().length < 10)
+			pillValue = pillValue * genome.getPillMultiplier();
+		if (game.getActivePillsIndices().length < 5)
+			pillValue = pillValue * genome.getPillMultiplier();
 		
 		int pillsPicked = 0;
 		for(int i : path){
@@ -149,36 +172,53 @@ public class Ms2PacAstar2 extends Controller<MOVE>
 			}
 			
 			if (powerPillList.contains(i)){
-				value += 100 - distanceToGhost(game, i);
-				power = true;
+				value += genome.getPowerPillValue();
 			}
 			
-			if (distanceToGhost(game, i) <= step && !power){
-				value-=1000;
-			} else if (distanceToGhost(game, i) <= 10 && !power){
-				value -= Math.max(0, 10-distanceToGhost(game, i));
+			if (distanceToDangerGhost(game, i) <= step + genome.getKillDistance()){
+				value += genome.getDeathValue();
+				death = true;
+			} else if (distanceToDangerGhost(game, i) <= genome.getDangerDistance()){
+				value -= Math.max(0, genome.getDeathValue() / distanceToDangerGhost(game, i));
 			}
-			
-			if (distanceToGhost(game, i) == 0 && power){
-				value+=1000;
+			if (distanceToEdibleGhost(game, i) <= step){
+				value += genome.getGhostValue();
 			}
 			
 			step++;
 		}
-		if (pillsPicked == game.getActivePillsIndices().length){
-			value+=100;
+		if (pillsPicked == game.getActivePillsIndices().length && !death){
+			value += genome.getWinValue();
 		}
-		value+=step*1.5;
+		
+		value += step * genome.getStepValue();
+		
 		return value;
 	}
 
-	private int distanceToGhost(Game game, int node) {
+	private int distanceToDangerGhost(Game game, int node) {
 		int closestGhost = 999;
 		for(GHOST ghost : GHOST.values()){
-			int ghostNode = game.getGhostCurrentNodeIndex(ghost);
-			int distance = game.getShortestPathDistance(node,ghostNode);
-			if (distance < closestGhost && distance != -1){
-				closestGhost = distance;
+			if (!game.isGhostEdible(ghost)){
+				int ghostNode = game.getGhostCurrentNodeIndex(ghost);
+				int distance = game.getShortestPathDistance(node,ghostNode);
+				if (distance < closestGhost && distance != -1){
+					closestGhost = distance;
+				}
+			}
+		}
+		return closestGhost;
+	}
+	
+	private int distanceToEdibleGhost(Game game, int node) {
+		int closestGhost = 999;
+		for(GHOST ghost : GHOST.values()){
+			if (game.isGhostEdible(ghost)){
+				int ghostNode = game.getGhostCurrentNodeIndex(ghost);
+				int distance = game.getShortestPathDistance(node,ghostNode);
+				if (distance < closestGhost && distance != -1){
+					closestGhost = distance;
+				}
 			}
 		}
 		return closestGhost;

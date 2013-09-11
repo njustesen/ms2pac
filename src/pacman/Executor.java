@@ -22,6 +22,9 @@ import pacman.controllers.examples.RandomNonRevPacMan;
 import pacman.controllers.examples.RandomPacMan;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
+import pacman.controllers.genetic.GeneticPacman;
+import pacman.controllers.genetic.GeneticPacman2;
+import pacman.controllers.genetic.Genome;
 import pacman.entries.pacman.BTreePacman;
 import pacman.entries.pacman.BTreePacman2;
 import pacman.entries.pacman.Ms2Pac;
@@ -58,27 +61,29 @@ public class Executor
 		exec.runExperiment(new RandomPacMan(),new RandomGhosts(),numTrials);
 		 */
 		
-		/*
+		
 		//run a game in synchronous mode: game waits until controllers respond.
 		int delay=5;
 		boolean visual=true;
-		exec.runGame(new RandomPacMan(),new RandomGhosts(),visual,delay);
-  		 */
+		exec.runGame(new GeneticPacman2(new Genome(10, 1.2, 0, 1000, -10000, 1000, 10, 10, 10)),new StarterGhosts(),visual,delay);
+		//exec.runGame(new Ms2PacAstar2(),new StarterGhosts(),visual,delay);
+  		
 		
 		///*
 		//run the game in asynchronous mode.
-		boolean visual=true;
+		//boolean visual=true;
 //		exec.runGameTimed(new NearestPillPacMan(),new AggressiveGhosts(),visual);
-		exec.runGameTimed(new BTreePacman2(),new StarterGhosts(),visual);
+		//exec.runGameTimed(new GeneticPacman(),new StarterGhosts(),visual);
 //		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
 		//*/
 		
-		/*
+		
 		//run the game in asynchronous mode but advance as soon as both controllers are ready  - this is the mode of the competition.
 		//time limit of DELAY ms still applies.
-		boolean visual=true;
+		//boolean visual=true;
+		/*
 		boolean fixedTime=false;
-		exec.runGameTimedSpeedOptimised(new RandomPacMan(),new RandomGhosts(),fixedTime,visual);
+		exec.runGameTimedSpeedOptimised(new GeneticPacman(), new StarterGhosts(),fixedTime,visual);
 		*/
 		
 		/*
@@ -122,6 +127,40 @@ public class Executor
 		}
 		
 		System.out.println(avgScore/trials);
+    }
+    
+    /**
+     * For running multiple games without visuals. This is useful to get a good idea of how well a controller plays
+     * against a chosen opponent: the random nature of the game means that performance can vary from game to game. 
+     * Running many games and looking at the average score (and standard deviation/error) helps to get a better
+     * idea of how well the controller is likely to do in the competition.
+     *
+     * @param pacManController The Pac-Man controller
+     * @param ghostController The Ghosts controller
+     * @param trials The number of trials to be executed
+     */
+    public double runExperimentWithAvgScore(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
+    {
+    	double avgScore=0;
+    	
+    	Random rnd=new Random(0);
+		Game game;
+		
+		for(int i=0;i<trials;i++)
+		{
+			game=new Game(rnd.nextLong());
+			
+			while(!game.gameOver())
+			{
+		        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()+DELAY),
+		        		ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
+			}
+			
+			avgScore+=game.getScore();
+			System.out.println(i+"\t"+game.getScore());
+		}
+		
+		return avgScore/trials;
     }
 	
 	/**
