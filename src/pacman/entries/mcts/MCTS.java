@@ -26,8 +26,8 @@ public class MCTS extends Controller<MOVE>{
 
 	public static final int NEW_LIFE_VALUE = 1000;
 	public static final int LOST_LIFE_VALUE = -2000;
-	private static final int SIM_STEPS = 100;
-	private static final int TREE_TIME_LIMIT = 30;
+	private static final int SIM_STEPS = 55;
+	private static final int TREE_TIME_LIMIT = 55;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
 	Controller<EnumMap<GHOST,MOVE>> ghosts = new Legacy();
@@ -93,6 +93,8 @@ public class MCTS extends Controller<MOVE>{
 		
 		for(MctsNode node : v.children){
 			float value = UCT(node, c);
+			if (!node.getState().isAlive())
+				value = -9999;
 			
 			if (c == 0)
 				System.out.println(node.move + "(c=" + c + " : " + value);
