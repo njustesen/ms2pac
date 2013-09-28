@@ -44,51 +44,51 @@ public class MctsNode {
 		
 		int pacman = state.getGame().getPacmanCurrentNodeIndex();
 		int junction = -1;
-		MOVE move = null;
+		MOVE nextMove = null;
 		
 		if (!state.isAlive()){
 			return this;
 		}
 		
 		// Closest junctions
-		if (!up && state.getGame().getNeighbour(pacman, MOVE.UP) != -1){
+		if (!up && state.getGame().getNeighbour(pacman, MOVE.UP) != -1 && (parent == null || move.opposite() != MOVE.UP)){
 			junction = closestJunction(MOVE.UP);
-			move = MOVE.UP;
-		} else if (!right && state.getGame().getNeighbour(pacman, MOVE.RIGHT) != -1){
+			nextMove = MOVE.UP;
+		} else if (!right && state.getGame().getNeighbour(pacman, MOVE.RIGHT) != -1 && (parent == null || move.opposite() != MOVE.RIGHT)){
 			junction = closestJunction(MOVE.RIGHT);
-			move = MOVE.RIGHT;
-		} else if (!down && state.getGame().getNeighbour(pacman, MOVE.DOWN) != -1){
+			nextMove = MOVE.RIGHT;
+		} else if (!down && state.getGame().getNeighbour(pacman, MOVE.DOWN) != -1 && (parent == null || move.opposite() != MOVE.DOWN)){
 			junction = closestJunction(MOVE.DOWN);
-			move = MOVE.DOWN;
-		} else if (!left && state.getGame().getNeighbour(pacman, MOVE.LEFT) != -1){
+			nextMove = MOVE.DOWN;
+		} else if (!left && state.getGame().getNeighbour(pacman, MOVE.LEFT) != -1 && (parent == null || move.opposite() != MOVE.LEFT)){
 			junction = closestJunction(MOVE.LEFT);
-			move = MOVE.LEFT;
+			nextMove = MOVE.LEFT;
 		}
 		
 		if (junction == -1){
-			return null;
+			return this;
 		}
 		
 		if (junction != -1){
-			updateDirection(move);
+			updateDirection(nextMove);
 			Executor exec=new Executor();
-			if (junction == 540 && move == MOVE.UP){
+			if (junction == 540 && nextMove == MOVE.UP){
 				exec=new Executor();
 			}
-			MctsState childState = exec.runExperimentUntilJunction(new AggressiveGhosts(), state.getGame(), junction, move);
+			MctsState childState = exec.runExperimentUntilJunction(new AggressiveGhosts(), state.getGame(), junction, nextMove);
 			if (childState == null || childState.getGame() == null){
-				return null;
+				return this;
 			}
 			
 			int to = childState.getGame().getPacmanCurrentNodeIndex();
 			int distance = (int) state.getGame().getDistance(pacman, to, DM.MANHATTAN);
 			
-			MctsNode child = new MctsNode(childState, this, move, time + distance);
+			MctsNode child = new MctsNode(childState, this, nextMove, time + distance);
 			children.add(child);
 			return child;
 		}
 
-		return null;
+		return this;
 		
 	}
 
@@ -107,9 +107,7 @@ public class MctsNode {
 		int from = state.getGame().getPacmanCurrentNodeIndex();
 		int current = from;
 		
-		List<Integer> junctions = MCTS.getJunctions(state.getGame());
-		
-		while(!junctions.contains(current) || current == from){
+		while(!MCTS.junctions.contains(current) || current == from){
 			
 			int next = state.getGame().getNeighbour(current, move);
 			
@@ -125,10 +123,18 @@ public class MctsNode {
 	}
 	
 	private int getDirections() {
+		
 		if (!state.isAlive())
 			return 0;
 		int node = state.getGame().getPacmanCurrentNodeIndex();
-		return state.getGame().getNeighbouringNodes(node).length;
+		int[] neighbors = state.getGame().getNeighbouringNodes(node);
+		int count = 0;
+		for(Integer i : neighbors){
+			if (parent == null || state.getGame().getMoveToMakeToReachDirectNeighbour(node, i) != move.opposite()){
+				count++;
+			}
+		}
+		return count;
 		
 	}
 	
@@ -197,7 +203,7 @@ public class MctsNode {
 		for(int n = 0; n < level; n++){
 			out += "\t";
 		}
-		out += "<node move="+move+" avg="+value/visited+" vis="+visited;
+		out += "<node move="+move+" score=" + state.getGame().getScore() + " avg="+value/visited+" visited="+visited + " time=" + time;
 		
 		if (children.isEmpty()){
 			out += "/>\n";

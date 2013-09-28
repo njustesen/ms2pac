@@ -17,6 +17,7 @@ import pacman.Executor;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.AggressiveGhosts;
 import pacman.controllers.examples.Legacy;
+import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.internal.Node;
@@ -26,11 +27,14 @@ public class MCTS extends Controller<MOVE>{
 
 	public static final int NEW_LIFE_VALUE = 1000;
 	public static final int LOST_LIFE_VALUE = -2000;
-	private static final int SIM_STEPS = 55;
-	private static final int TREE_TIME_LIMIT = 55;
+	private static final int SIM_STEPS = 100;
+	private static final int TREE_TIME_LIMIT = 45;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
 	Controller<EnumMap<GHOST,MOVE>> ghosts = new Legacy();
+	
+	public static List<Integer> junctions;
+	public int lastLevel = 1;
 	
 	@Override
 	public MOVE getMove(Game game, long timeDue) {
@@ -40,6 +44,13 @@ public class MCTS extends Controller<MOVE>{
 	}
 	
 	private MOVE MctsSearch(Game game, long ms) {
+		
+		int level = game.getCurrentLevel();
+		
+		if (junctions == null || lastLevel != level)
+			junctions = getJunctions(game);
+		
+		lastLevel = level;
 		
 		long start = new Date().getTime();
 		MctsNode v0 = new MctsNode(new MctsState(true, game), null, game.getPacmanLastMoveMade(), 0);
@@ -65,12 +76,11 @@ public class MCTS extends Controller<MOVE>{
 		
 	}
 
-
 	private MctsNode treePolicy(MctsNode node) {
 		
 		if (node.isExpandable()){
 			if (node.getTime() <= TREE_TIME_LIMIT)
-				return expandedNode(node);
+				return node.expand();
 			else
 				return node;
 		}
@@ -81,10 +91,6 @@ public class MCTS extends Controller<MOVE>{
 			return node;
 			
 	}
-
-	private MctsNode expandedNode(MctsNode node) {
-		return node.expand();
-	}
 	
 	private MctsNode bestChild(MctsNode v, float c) {
 		
@@ -94,10 +100,10 @@ public class MCTS extends Controller<MOVE>{
 		for(MctsNode node : v.children){
 			float value = UCT(node, c);
 			if (!node.getState().isAlive())
-				value = -9999;
+				value = -99999;
 			
-			if (c == 0)
-				System.out.println(node.move + "(c=" + c + " : " + value);
+			//if (c == 0)
+				//System.out.println(node.move + "(c=" + c + " : " + value);
 			
 			if (value > bestValue){
 				urgent = node;
@@ -123,22 +129,9 @@ public class MCTS extends Controller<MOVE>{
 		
 		float uct = (float) (reward + 2 * c * Math.sqrt((2 * Math.log(n)) / nj));
 		
-		if (reward < 0){
-			reward++;
-		}
-		
 		return uct;
 		
 		//return (float) (reward + 2 * c * Math.sqrt((2 * Math.log(n)) / nj));
-		
-	}
-
-	private float getReward(MctsNode node) {
-		
-		float nodeAvgScore = node.getValue() / node.getVisited();
-		float parentAvgScore = node.getParent().getValue() / node.getParent().getVisited();
-		
-		return nodeAvgScore - parentAvgScore;
 		
 	}
 
@@ -171,7 +164,7 @@ public class MCTS extends Controller<MOVE>{
 		v.setVisited(v.getVisited() + 1);
 		v.setValue(v.getValue() + score);
 		if (v.getParent() != null)
-			backup(v.getParent(), (int)(score));
+			backup(v.getParent(), score);
 		
 	}
 	
@@ -182,16 +175,7 @@ public class MCTS extends Controller<MOVE>{
 		int[] juncArr = game.getJunctionIndices();
 		for(Integer i : juncArr)
 			junctions.add(i);
-		/*
-		if (game.isGhostEdible(GHOST.BLINKY))
-			junctions.add(game.getGhostCurrentNodeIndex(GHOST.BLINKY));
-		if (game.isGhostEdible(GHOST.PINKY))
-			junctions.add(game.getGhostCurrentNodeIndex(GHOST.PINKY));
-		if (game.isGhostEdible(GHOST.INKY))
-			junctions.add(game.getGhostCurrentNodeIndex(GHOST.INKY));
-		if (game.isGhostEdible(GHOST.SUE))
-			junctions.add(game.getGhostCurrentNodeIndex(GHOST.SUE));
-		*/
+		
 		junctions.addAll(getTurns(game));
 		
 		return junctions;
@@ -244,6 +228,7 @@ public class MCTS extends Controller<MOVE>{
 		}
 		
 		int score = game.getScore();
+		
 		int livesAfter = game.getPacmanNumberOfLivesRemaining();
 		if (livesAfter > livesBefore){
 			score += MCTS.NEW_LIFE_VALUE;
@@ -252,27 +237,6 @@ public class MCTS extends Controller<MOVE>{
 		}
 		
 		return score;
-	}
-	
-	private void saveToFile(String str, String filename) {
-		// Write to file
-        FileWriter fw = null;
-		try {
-			File old = new File(filename);
-			if (old.exists()){
-				old.delete();
-				System.out.println(filename + " deleted");
-			}
-			File file = new File(filename);
-			fw = new FileWriter(file);
-			fw.write(str);
-			fw.close();
-			System.out.println(filename + " saved");
-		} catch (FileNotFoundException e1) {
-			System.out.println("Error saving " + filename + ". " + e1);
-		} catch (IOException e2) {
-			System.out.println("Error saving " + filename + ". " + e2);
-		}
 	}
 	
 }

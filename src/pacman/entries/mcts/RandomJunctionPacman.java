@@ -20,12 +20,11 @@ import pacman.game.internal.Node;
 public class RandomJunctionPacman extends Controller<MOVE>
 {
 	
-	List<Integer> junctions;
-	
 	public MOVE getMove(Game game, long timeDue) {
 		
-		if (junctions == null)
-			junctions = MCTS.getJunctions(game);
+		if (MCTS.junctions == null)
+			MCTS.junctions = MCTS.getJunctions(game);
+			
 		
 		MOVE lastMove = game.getPacmanLastMoveMade();
 		
@@ -38,20 +37,31 @@ public class RandomJunctionPacman extends Controller<MOVE>
 	
 	private boolean inJunction(Game game) {
 		
-		if (junctions.contains(game.getPacmanCurrentNodeIndex()))
+		if (MCTS.junctions.contains(game.getPacmanCurrentNodeIndex()))
 			return true;
 		
 		return false;
 	}
 
 	private MOVE randomAction(MOVE except) {
-		int random = (int) (Math.random() * 4);
-		switch(random){
-		case 0: return MOVE.UP;
-		case 1: return MOVE.RIGHT;
-		case 2: return MOVE.DOWN;
+		MOVE move = null;
+		
+		while(move == null){
+			int random = (int) (Math.random() * 4);
+			
+			switch(random){
+			case 0: move = MOVE.UP; break;
+			case 1: move = MOVE.RIGHT; break;
+			case 2: move = MOVE.DOWN; break;
+			case 3: move = MOVE.LEFT; break;
+			}
+			
+			if (move == except)
+				move = null;
+			
 		}
-		return MOVE.LEFT;
+		
+		return move;
 	}
 
 	
