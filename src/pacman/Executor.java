@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.Random;
+
 import pacman.controllers.Controller;
 import pacman.controllers.HumanController;
 import pacman.controllers.KeyBoardInput;
@@ -23,8 +24,13 @@ import pacman.controllers.examples.RandomPacMan;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.examples.StarterPacMan;
 import pacman.controllers.genetic.GeneticPacman;
+import pacman.controllers.genetic.GeneticPacman1;
 import pacman.controllers.genetic.GeneticPacman2;
 import pacman.controllers.genetic.Genome;
+import pacman.entries.mcts.MCTS;
+import pacman.entries.mcts.MctsState;
+import pacman.entries.mcts.RandomJunctionPacman;
+import pacman.entries.mcts.RandomPacman;
 import pacman.entries.pacman.BTreePacman;
 import pacman.entries.pacman.BTreePacman2;
 import pacman.entries.pacman.Ms2Pac;
@@ -34,7 +40,6 @@ import pacman.entries.pacman.Ms2PacAstar3;
 import pacman.entries.pacman.Ms2PacState;
 import pacman.game.Game;
 import pacman.game.GameView;
-
 import static pacman.game.Constants.*;
 
 /**
@@ -63,12 +68,15 @@ public class Executor
 		
 		
 		//run a game in synchronous mode: game waits until controllers respond.
-		int delay=10;
+		int delay=50;
 		boolean visual=true;
 		//[pillValue=401, pillMultiplier=-8.043920635206801, powerPillValue=-49, ghostValue=7426, deathValue=-7269, winValue=-2327, stepValue=982, dangerDistance=47, killDistance=4]
-		exec.runGame(new GeneticPacman2(new Genome(401, -8.043920635206801, -49, 7426, -7269, -2327, 982, 47, 4)),new StarterGhosts(),visual,delay);
+		//10793.333333333334 - [pillValue=754, pillMultiplier=-3.80047351578399, powerPillValue=855, ghostValue=5437, deathValue=-3029, winValue=-7990, stepValue=360, dangerDistance=37, killDistance=11]
+		//exec.runGame(new GeneticPacman1(new Genome(401, -8.043920635206801, -49, 7426, -7269, -2327, 982, 47, 4)),new StarterGhosts(),visual,delay);
+		//exec.runGame(new GeneticPacman2(new Genome(754, -3.80047351578399, 855, 5437, -3029, -7990, 360, 37, 4)),new StarterGhosts(),visual,delay);
 		//exec.runGame(new Ms2PacAstar2(),new StarterGhosts(),visual,delay);
-  		
+  		//exec.runGame(new RandomJunctionPacman(), new StarterGhosts(), visual, delay);
+		exec.runGame(new MCTS(), new StarterGhosts(), visual, delay);
 		
 		///*
 		//run the game in asynchronous mode.
@@ -436,4 +444,45 @@ public class Executor
         
         return replay;
 	}
+
+	public MctsState runExperimentUntilJunction(Controller<EnumMap<GHOST,MOVE>> ghostController, Game game, int junction, MOVE move) {
+		
+		Game clone = game.copy();
+		clone.advanceGame(move,
+        		ghostController.getMove(clone.copy(),System.currentTimeMillis()));
+		
+		int livesBefore = clone.getPacmanNumberOfLivesRemaining();
+		
+		while(clone.getPacmanCurrentNodeIndex() != junction){
+
+			int last = clone.getPacmanCurrentNodeIndex();
+			
+			clone.advanceGame(move,
+		    		ghostController.getMove(clone.copy(),System.currentTimeMillis()));
+		    
+			int now = clone.getPacmanCurrentNodeIndex();
+			
+			
+				//return new MctsState(false, clone);
+			
+			int livesNow = clone.getPacmanNumberOfLivesRemaining();
+			
+			if (livesNow <= 0)
+				return new MctsState(false, clone);
+			
+			if (now == 978 && livesNow < livesBefore)
+				return new MctsState(true, clone);
+			
+			if (now == last){
+				//return null;
+				return new MctsState(true, clone);
+			}
+			
+		}
+		
+		return new MctsState(true, clone);
+		
+	}
+
+	
 }

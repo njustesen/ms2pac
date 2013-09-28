@@ -26,17 +26,17 @@ import pacman.game.internal.Node;
  * fill in the getAction() method. Any additional classes you write should either
  * be placed in this package or sub-packages (e.g., game.entries.pacman.mypackage).
  */
-public class GeneticPacman2 extends Controller<MOVE>
+public class GeneticPacman1 extends Controller<MOVE>
 {
 	
 	private Genome genome;
 	
-	public GeneticPacman2(Genome genome) {
+	public GeneticPacman1(Genome genome) {
 		super();
 		this.genome = genome;
 	}
 	
-	public GeneticPacman2() {
+	public GeneticPacman1() {
 		super();
 		this.genome = null;
 	}
@@ -70,13 +70,10 @@ public class GeneticPacman2 extends Controller<MOVE>
 				game.isGhostEdible(GHOST.INKY) && 
 				game.isGhostEdible(GHOST.SUE)){
 			points = new ArrayList<Integer>();
-			points.add(closestEdibleGhostPosition(game, position, false));
-			/*
 			points.add(game.getGhostCurrentNodeIndex(GHOST.BLINKY));
 			points.add(game.getGhostCurrentNodeIndex(GHOST.PINKY));
 			points.add(game.getGhostCurrentNodeIndex(GHOST.INKY));
 			points.add(game.getGhostCurrentNodeIndex(GHOST.SUE));
-			
 		}
 			*/
 		List<Integer> values = new ArrayList<Integer>();
@@ -107,7 +104,6 @@ public class GeneticPacman2 extends Controller<MOVE>
 		
 	}
 	
-
 	private void printPath(Game game, int position, int[] path) {
 		for(int i : path){
 			MOVE m = game.getMoveToMakeToReachDirectNeighbour(position, i);
@@ -168,7 +164,6 @@ public class GeneticPacman2 extends Controller<MOVE>
 			pillValue = pillValue * genome.getPillMultiplier();
 		
 		int pillsPicked = 0;
-		boolean power = false;
 		for(int i : path){
 			
 			if (pillList.contains(i)){
@@ -178,16 +173,15 @@ public class GeneticPacman2 extends Controller<MOVE>
 			
 			if (powerPillList.contains(i)){
 				value += genome.getPowerPillValue();
-				power = true;
 			}
 			
-			if (distanceToDangerGhost(game, i, power) <= step + genome.getKillDistance()){
+			if (distanceToDangerGhost(game, i) <= step + genome.getKillDistance()){
 				value += genome.getDeathValue();
 				death = true;
-			} else if (distanceToDangerGhost(game, i, power) <= genome.getDangerDistance()){
-				value -= Math.max(0, genome.getDeathValue() / distanceToDangerGhost(game, i, power));
+			} else if (distanceToDangerGhost(game, i) <= genome.getDangerDistance()){
+				value -= Math.max(0, genome.getDeathValue() / distanceToDangerGhost(game, i));
 			}
-			if (distanceToEdibleGhost(game, i, power) <= step){
+			if (distanceToEdibleGhost(game, i) <= step){
 				value += genome.getGhostValue();
 			}
 			
@@ -202,13 +196,12 @@ public class GeneticPacman2 extends Controller<MOVE>
 		return value;
 	}
 
-
-	private int distanceToDangerGhost(Game game, int node, boolean power) {
+	private int distanceToDangerGhost(Game game, int node) {
 		int closestGhost = 999;
 		for(GHOST ghost : GHOST.values()){
-			int ghostNode = game.getGhostCurrentNodeIndex(ghost);
-			int distance = game.getShortestPathDistance(node,ghostNode);
-			if ((!game.isGhostEdible(ghost) && !power) || (power || game.getGhostEdibleTime(ghost) <= distance)){
+			if (!game.isGhostEdible(ghost)){
+				int ghostNode = game.getGhostCurrentNodeIndex(ghost);
+				int distance = game.getShortestPathDistance(node,ghostNode);
 				if (distance < closestGhost && distance != -1){
 					closestGhost = distance;
 				}
@@ -217,12 +210,12 @@ public class GeneticPacman2 extends Controller<MOVE>
 		return closestGhost;
 	}
 	
-	private int distanceToEdibleGhost(Game game, int node, boolean power) {
+	private int distanceToEdibleGhost(Game game, int node) {
 		int closestGhost = 999;
 		for(GHOST ghost : GHOST.values()){
-			int ghostNode = game.getGhostCurrentNodeIndex(ghost);
-			int distance = game.getShortestPathDistance(node,ghostNode);
-			if ((power || game.isGhostEdible(ghost)) && (power || game.getGhostEdibleTime(ghost) > distance)){
+			if (game.isGhostEdible(ghost)){
+				int ghostNode = game.getGhostCurrentNodeIndex(ghost);
+				int distance = game.getShortestPathDistance(node,ghostNode);
 				if (distance < closestGhost && distance != -1){
 					closestGhost = distance;
 				}
@@ -230,24 +223,6 @@ public class GeneticPacman2 extends Controller<MOVE>
 		}
 		return closestGhost;
 	}
-	
 
-	private Integer closestEdibleGhostPosition(Game game, int node, boolean power) {
-		int closestGhost = 999;
-		int closestGhostPosition = 0;
-		for(GHOST ghost : GHOST.values()){
-			int ghostNode = game.getGhostCurrentNodeIndex(ghost);
-			int distance = game.getShortestPathDistance(node,ghostNode);
-			if ((power || game.isGhostEdible(ghost)) && (power || game.getGhostEdibleTime(ghost) > distance)){
-				if (distance < closestGhost && distance != -1){
-					closestGhost = distance;
-					closestGhostPosition = ghostNode;
-				}
-			}
-		}
-		return closestGhostPosition;
-	}
-	
 }
-
 

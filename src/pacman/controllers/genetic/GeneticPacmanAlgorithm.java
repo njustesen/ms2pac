@@ -16,7 +16,7 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 	public static void main(String[] args)
 	{
 		
-		GeneticPacmanAlgorithm alg = new GeneticPacmanAlgorithm(20, 10);
+		GeneticPacmanAlgorithm alg = new GeneticPacmanAlgorithm(26, 20);
 		alg.getBest();
 		
 	}
@@ -34,13 +34,16 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 		
 		Genome bestGenome = null;
 		for(int g = 0; g < generations; g++){
+			
+			
+			
 			// Test
 			double[] scores = new double[size];
 			int idx = 0;
 			for(Genome genome : population){
 				
 				Executor exec=new Executor();
-				double score = exec.runExperimentWithAvgScore(new GeneticPacman2(genome), new StarterGhosts(),1);
+				double score = exec.runExperimentWithAvgScore(new GeneticPacman2(genome), new StarterGhosts(),3);
 				scores[idx] = score;
 				idx++;
 				
@@ -58,7 +61,7 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 					bestGenome = population.get(i);
 				}
 			}
-			System.out.println("Best: " + bestScore + " - " + bestGenome);
+			System.out.println("Best of generation " + g + ": " + bestScore + " - " + bestGenome);
 			Arrays.sort(clone);
 			
 			// Stop if last generation
