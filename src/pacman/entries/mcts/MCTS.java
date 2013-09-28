@@ -26,7 +26,7 @@ import pacman.game.Game;
 public class MCTS extends Controller<MOVE>{
 
 	public static final int NEW_LIFE_VALUE = 1000;
-	public static final int LOST_LIFE_VALUE = -2000;
+	public static final int LOST_LIFE_VALUE = -200;
 	private static final int SIM_STEPS = 100;
 	private static final int TREE_TIME_LIMIT = 45;
 	// Hoeffding ineqality
@@ -39,7 +39,7 @@ public class MCTS extends Controller<MOVE>{
 	@Override
 	public MOVE getMove(Game game, long timeDue) {
 		
-		return MctsSearch(game, 38);
+		return MctsSearch(game, 15);
 		
 	}
 	
@@ -67,10 +67,10 @@ public class MCTS extends Controller<MOVE>{
 			
 		}
 		
-		System.out.println(v0.print(0));
+		//System.out.println(v0.print(0));
 		
 		MOVE move = bestChild(v0, 0).getMove();
-		System.out.println(move);
+		//System.out.println(move);
 		
 		return move;
 		
@@ -153,7 +153,7 @@ public class MCTS extends Controller<MOVE>{
 				node.getState().getGame().getPacmanNumberOfLivesRemaining() < root.getState().getGame().getPacmanNumberOfLivesRemaining())
 			return LOST_LIFE_VALUE;
 		
-		int result = runExperimentWithAvgScoreLimit(SIM_STEPS);
+		int result = runExperimentWithAvgScoreLimit(node, SIM_STEPS);
 		
 		return result -= root.getState().getGame().getScore();
 
@@ -163,6 +163,7 @@ public class MCTS extends Controller<MOVE>{
 		
 		v.setVisited(v.getVisited() + 1);
 		v.setValue(v.getValue() + score);
+		v.getSimulations().add(score);
 		if (v.getParent() != null)
 			backup(v.getParent(), score);
 		
@@ -204,15 +205,13 @@ public class MCTS extends Controller<MOVE>{
 		return turns;
 	}
 	
-	public int runExperimentWithAvgScoreLimit(int steps) {
+	public int runExperimentWithAvgScoreLimit(MctsNode node, int steps) {
 		
 		Controller<MOVE> pacManController = new RandomJunctionPacman();
 		Controller<EnumMap<GHOST,MOVE>> ghostController = ghosts;
     	
     	Random rnd=new Random(0);
-		Game game;
-		
-		game=new Game(rnd.nextLong());
+		Game game = node.getState().getGame().copy();
 			
 		int livesBefore = game.getPacmanNumberOfLivesRemaining();
 		int s = 0;

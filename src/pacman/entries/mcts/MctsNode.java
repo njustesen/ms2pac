@@ -21,6 +21,7 @@ public class MctsNode {
 	List<MctsNode> children;
 	int directions;
 	int time;
+	List<Integer> simulations;
 	
 	private boolean up = false;
 	private boolean right = false;
@@ -37,6 +38,7 @@ public class MctsNode {
 		this.value = 0;
 		this.children = new ArrayList<MctsNode>();
 		this.time = time;
+		this.simulations = new ArrayList<Integer>();
 	}
 	
 
@@ -106,6 +108,9 @@ public class MctsNode {
 		
 		int from = state.getGame().getPacmanCurrentNodeIndex();
 		int current = from;
+		if (current == -1)
+			return -1;
+		
 		
 		while(!MCTS.junctions.contains(current) || current == from){
 			
@@ -203,7 +208,9 @@ public class MctsNode {
 		for(int n = 0; n < level; n++){
 			out += "\t";
 		}
-		out += "<node move="+move+" score=" + state.getGame().getScore() + " avg="+value/visited+" visited="+visited + " time=" + time;
+		out += "<node move="+move+" score=" + state.getGame().getScore() + " avg=(" + value + "/" + visited + ")"+value/visited+" visited="+visited + " time=" + time;
+		for(Integer i : simulations)
+			out += "(" + i + ")";
 		
 		if (children.isEmpty()){
 			out += "/>\n";
@@ -238,7 +245,15 @@ public class MctsNode {
 	public void setTime(int time) {
 		this.time = time;
 	}
-	
-	
+
+
+	public List<Integer> getSimulations() {
+		return simulations;
+	}
+
+
+	public void setSimulations(List<Integer> simulations) {
+		this.simulations = simulations;
+	}
 	
 }
