@@ -27,6 +27,7 @@ public class MCTS extends Controller<MOVE>{
 	public static final int NEW_LIFE_VALUE = 1000;
 	public static final int LOST_LIFE_VALUE = -2000;
 	private static final int SIM_STEPS = 100;
+	private static final int TREE_TIME_LIMIT = 30;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
 	Controller<EnumMap<GHOST,MOVE>> ghosts = new Legacy();
@@ -41,7 +42,7 @@ public class MCTS extends Controller<MOVE>{
 	private MOVE MctsSearch(Game game, long ms) {
 		
 		long start = new Date().getTime();
-		MctsNode v0 = new MctsNode(new MctsState(true, game), null, game.getPacmanLastMoveMade());
+		MctsNode v0 = new MctsNode(new MctsState(true, game), null, game.getPacmanLastMoveMade(), 0);
 		
 		while(new Date().getTime() < start + ms){
 			
@@ -68,7 +69,10 @@ public class MCTS extends Controller<MOVE>{
 	private MctsNode treePolicy(MctsNode node) {
 		
 		if (node.isExpandable()){
-			return expandedNode(node);
+			if (node.getTime() <= TREE_TIME_LIMIT)
+				return expandedNode(node);
+			else
+				return node;
 		}
 		
 		if (node.getState().isAlive())

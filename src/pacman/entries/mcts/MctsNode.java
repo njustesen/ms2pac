@@ -7,6 +7,7 @@ import pacman.Executor;
 import pacman.controllers.examples.AggressiveGhosts;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.controllers.genetic.GeneticPacman2;
+import pacman.game.Constants.DM;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
@@ -19,13 +20,14 @@ public class MctsNode {
 	float value;
 	List<MctsNode> children;
 	int directions;
+	int time;
 	
 	private boolean up = false;
 	private boolean right = false;
 	private boolean down = false;
 	private boolean left = false;
 	
-	public MctsNode(MctsState state, MctsNode parent, MOVE move) {
+	public MctsNode(MctsState state, MctsNode parent, MOVE move, int time) {
 		super();
 		this.state = state;
 		this.parent = parent;
@@ -34,6 +36,7 @@ public class MctsNode {
 		this.directions = getDirections();
 		this.value = 0;
 		this.children = new ArrayList<MctsNode>();
+		this.time = time;
 	}
 	
 
@@ -44,7 +47,7 @@ public class MctsNode {
 		MOVE move = null;
 		
 		if (!state.isAlive()){
-			return null;
+			return this;
 		}
 		
 		// Closest junctions
@@ -76,7 +79,11 @@ public class MctsNode {
 			if (childState == null || childState.getGame() == null){
 				return null;
 			}
-			MctsNode child = new MctsNode(childState, this, move);
+			
+			int to = childState.getGame().getPacmanCurrentNodeIndex();
+			int distance = (int) state.getGame().getDistance(pacman, to, DM.MANHATTAN);
+			
+			MctsNode child = new MctsNode(childState, this, move, time + distance);
 			children.add(child);
 			return child;
 		}
@@ -215,5 +222,17 @@ public class MctsNode {
 		return out;
 		
 	}
+
+
+	public int getTime() {
+		return time;
+	}
+
+
+	public void setTime(int time) {
+		this.time = time;
+	}
+	
+	
 	
 }
