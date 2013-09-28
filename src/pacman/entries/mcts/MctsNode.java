@@ -5,11 +5,8 @@ import java.util.List;
 
 import pacman.Executor;
 import pacman.controllers.examples.AggressiveGhosts;
-import pacman.controllers.examples.StarterGhosts;
-import pacman.controllers.genetic.GeneticPacman2;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.MOVE;
-import pacman.game.Game;
 
 public class MctsNode {
 
@@ -111,7 +108,6 @@ public class MctsNode {
 		if (current == -1)
 			return -1;
 		
-		
 		while(!MCTS.junctions.contains(current) || current == from){
 			
 			int next = state.getGame().getNeighbour(current, move);
@@ -120,6 +116,8 @@ public class MctsNode {
 				return -1;
 			
 			current = next;
+			if (current == -1)
+				return -1;
 			
 		}
 		
@@ -209,9 +207,10 @@ public class MctsNode {
 			out += "\t";
 		}
 		out += "<node move="+move+" score=" + state.getGame().getScore() + " avg=(" + value + "/" + visited + ")"+value/visited+" visited="+visited + " time=" + time;
+		/*
 		for(Integer i : simulations)
 			out += "(" + i + ")";
-		
+		*/
 		if (children.isEmpty()){
 			out += "/>\n";
 		} else {

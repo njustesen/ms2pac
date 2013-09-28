@@ -17,6 +17,7 @@ import pacman.Executor;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.AggressiveGhosts;
 import pacman.controllers.examples.Legacy;
+import pacman.controllers.examples.StarterGhosts;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -25,13 +26,13 @@ import pacman.game.Game;
 
 public class MCTS extends Controller<MOVE>{
 
-	public static final int NEW_LIFE_VALUE = 1000;
-	public static final int LOST_LIFE_VALUE = -200;
+	public static final int NEW_LIFE_VALUE = 0;
+	public static final int LOST_LIFE_VALUE = -500;
 	private static final int SIM_STEPS = 100;
 	private static final int TREE_TIME_LIMIT = 45;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
-	Controller<EnumMap<GHOST,MOVE>> ghosts = new Legacy();
+	Controller<EnumMap<GHOST,MOVE>> ghosts = new StarterGhosts();
 	
 	public static List<Integer> junctions;
 	public int lastLevel = 1;
@@ -39,7 +40,7 @@ public class MCTS extends Controller<MOVE>{
 	@Override
 	public MOVE getMove(Game game, long timeDue) {
 		
-		return MctsSearch(game, 15);
+		return MctsSearch(game, 30);
 		
 	}
 	
@@ -58,6 +59,7 @@ public class MCTS extends Controller<MOVE>{
 		while(new Date().getTime() < start + ms){
 			
 			MctsNode v1 = treePolicy(v0);
+			
 			if (v1 == null)
 				return MOVE.DOWN;
 			
@@ -67,10 +69,13 @@ public class MCTS extends Controller<MOVE>{
 			
 		}
 		
-		//System.out.println(v0.print(0));
+		MctsNode bestNode = bestChild(v0, 0);
+		MOVE move = MOVE.UP;
+		if (bestNode != null)
+			move = bestNode.getMove();
 		
-		MOVE move = bestChild(v0, 0).getMove();
-		//System.out.println(move);
+		System.out.println(v0.print(0));
+		System.out.println(move);
 		
 		return move;
 		
@@ -102,23 +107,43 @@ public class MCTS extends Controller<MOVE>{
 			if (!node.getState().isAlive())
 				value = -99999;
 			
-			//if (c == 0)
+			
 				//System.out.println(node.move + "(c=" + c + " : " + value);
 			
 			if (value > bestValue){
-				urgent = node;
-				bestValue = value;
+				if (c != 0 || dieTest(v, node)){
+					urgent = node;
+					bestValue = value;
+				}
 			}
 		}
 		
 		return urgent;
 	}
 
+	private boolean dieTest(MctsNode v, MctsNode node) {
+		
+		Controller<MOVE> pacManController = new RandomJunctionPacman();
+		Controller<EnumMap<GHOST,MOVE>> ghostController = ghosts;
+    	
+		Game game = v.getState().getGame().copy();
+			
+		int livesBefore = game.getPacmanNumberOfLivesRemaining();
+		
+		game.advanceGame(node.getMove(),
+	        	ghostController.getMove(game.copy(),System.currentTimeMillis()));
+	        
+	    int livesAfter = game.getPacmanNumberOfLivesRemaining();
+		if (livesAfter < livesBefore)
+			return false;
+		
+		return true;
+		
+	}
+
 	private float UCT(MctsNode node, float c) {
 		
-		//float reward = getReward(node);
 		float reward = node.getValue() / node.getVisited();
-		// normalize()
 		reward = normalize(reward);
 		
 		float n = 0;
@@ -130,8 +155,6 @@ public class MCTS extends Controller<MOVE>{
 		float uct = (float) (reward + 2 * c * Math.sqrt((2 * Math.log(n)) / nj));
 		
 		return uct;
-		
-		//return (float) (reward + 2 * c * Math.sqrt((2 * Math.log(n)) / nj));
 		
 	}
 
@@ -210,15 +233,14 @@ public class MCTS extends Controller<MOVE>{
 		Controller<MOVE> pacManController = new RandomJunctionPacman();
 		Controller<EnumMap<GHOST,MOVE>> ghostController = ghosts;
     	
-    	Random rnd=new Random(0);
 		Game game = node.getState().getGame().copy();
 			
 		int livesBefore = game.getPacmanNumberOfLivesRemaining();
 		int s = 0;
 		while(!game.gameOver() && s < steps)
 		{
-	        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()+DELAY),
-	        		ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
+	        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()),
+	        		ghostController.getMove(game.copy(),System.currentTimeMillis()));
 	        s++;
 	        int livesAfter = game.getPacmanNumberOfLivesRemaining();
 			if (livesAfter < livesBefore){
