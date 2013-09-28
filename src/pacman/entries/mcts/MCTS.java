@@ -25,10 +25,11 @@ import pacman.game.Game;
 public class MCTS extends Controller<MOVE>{
 
 	public static final int NEW_LIFE_VALUE = 1000;
-	public static final int LOST_LIFE_VALUE = -20000;
+	public static final int LOST_LIFE_VALUE = -2000;
 	private static final int SIM_STEPS = 100;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
+	Controller<EnumMap<GHOST,MOVE>> ghosts = new Legacy();
 	
 	@Override
 	public MOVE getMove(Game game, long timeDue) {
@@ -216,7 +217,7 @@ public class MCTS extends Controller<MOVE>{
 	public int runExperimentWithAvgScoreLimit(int steps) {
 		
 		Controller<MOVE> pacManController = new RandomJunctionPacman();
-		Controller<EnumMap<GHOST,MOVE>> ghostController = new AggressiveGhosts();
+		Controller<EnumMap<GHOST,MOVE>> ghostController = ghosts;
     	
     	Random rnd=new Random(0);
 		Game game;

@@ -448,34 +448,31 @@ public class Executor
 	public MctsState runExperimentUntilJunction(Controller<EnumMap<GHOST,MOVE>> ghostController, Game game, int junction, MOVE move) {
 		
 		Game clone = game.copy();
+		/*
 		clone.advanceGame(move,
         		ghostController.getMove(clone.copy(),System.currentTimeMillis()));
-		
+		*/
 		int livesBefore = clone.getPacmanNumberOfLivesRemaining();
+		int first = clone.getPacmanCurrentNodeIndex();
+		int now = clone.getPacmanCurrentNodeIndex();
 		
-		while(clone.getPacmanCurrentNodeIndex() != junction){
+		while(now != junction){
 
-			int last = clone.getPacmanCurrentNodeIndex();
+			int last = now;
 			
 			clone.advanceGame(move,
-		    		ghostController.getMove(clone.copy(),System.currentTimeMillis()));
+		    		ghostController.getMove(clone.copy(),
+		    		System.currentTimeMillis()));
 		    
-			int now = clone.getPacmanCurrentNodeIndex();
-			
-			
-				//return new MctsState(false, clone);
-			
+			now = clone.getPacmanCurrentNodeIndex();
 			int livesNow = clone.getPacmanNumberOfLivesRemaining();
 			
-			if (livesNow <= 0)
+			if (livesNow < livesBefore)
 				return new MctsState(false, clone);
-			
-			if (now == 978 && livesNow < livesBefore)
-				return new MctsState(true, clone);
-			
+
 			if (now == last){
-				//return null;
-				return new MctsState(true, clone);
+				System.out.println("ERROR: Junction not found");
+				break;
 			}
 			
 		}
