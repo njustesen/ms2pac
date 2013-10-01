@@ -28,11 +28,11 @@ public class MCTS extends Controller<MOVE>{
 
 	public static final int NEW_LIFE_VALUE = 0;
 	public static final int LOST_LIFE_VALUE = -500;
-	private static final int SIM_STEPS = 100;
+	private static final int SIM_STEPS = 200;
 	private static final int TREE_TIME_LIMIT = 45;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
-	Controller<EnumMap<GHOST,MOVE>> ghosts = new StarterGhosts();
+	Controller<EnumMap<GHOST,MOVE>> ghosts = new Legacy();
 	
 	public static List<Integer> junctions;
 	public int lastLevel = 1;
@@ -40,7 +40,7 @@ public class MCTS extends Controller<MOVE>{
 	@Override
 	public MOVE getMove(Game game, long timeDue) {
 		
-		return MctsSearch(game, 30);
+		return MctsSearch(game, 35);
 		
 	}
 	
