@@ -28,8 +28,10 @@ public class MCTS extends Controller<MOVE>{
 
 	public static final int NEW_LIFE_VALUE = 0;
 	public static final int LOST_LIFE_VALUE = -500;
-	private static final int SIM_STEPS = 200;
+	private static final int SIM_STEPS = 210;
 	private static final int TREE_TIME_LIMIT = 45;
+	private static final int MISSUSE_OF_POWER_PILL = -100;
+	private static final int GHOST_DISTANCE = 90;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
 	Controller<EnumMap<GHOST,MOVE>> ghosts = new Legacy();
@@ -74,8 +76,8 @@ public class MCTS extends Controller<MOVE>{
 		if (bestNode != null)
 			move = bestNode.getMove();
 		
-		System.out.println(v0.print(0));
-		System.out.println(move);
+		//System.out.println(v0.print(0));
+		//System.out.println(move);
 		
 		return move;
 		
@@ -160,7 +162,7 @@ public class MCTS extends Controller<MOVE>{
 
 	private float normalize(float x) {	
 		
-		float min = -30000;
+		float min = -500;
 		float max = 2000;
 		float range = max - min;
 		float inZeroRange = (x - min);
@@ -236,12 +238,18 @@ public class MCTS extends Controller<MOVE>{
 		Game game = node.getState().getGame().copy();
 			
 		int livesBefore = game.getPacmanNumberOfLivesRemaining();
+		int ppBefore = game.getNumberOfActivePowerPills();
 		int s = 0;
+		int bonus = 0;
 		while(!game.gameOver() && s < steps)
 		{
 	        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()),
 	        		ghostController.getMove(game.copy(),System.currentTimeMillis()));
 	        s++;
+	        int ppAfter = game.getNumberOfActivePowerPills();
+	        if (ppAfter < ppBefore && avgDistanceToGhosts(game) > GHOST_DISTANCE){
+	        	bonus += MISSUSE_OF_POWER_PILL;
+	        }
 	        int livesAfter = game.getPacmanNumberOfLivesRemaining();
 			if (livesAfter < livesBefore){
 				break;
@@ -257,7 +265,14 @@ public class MCTS extends Controller<MOVE>{
 			score += MCTS.LOST_LIFE_VALUE;
 		}
 		
-		return score;
+		return score + bonus;
+	}
+
+	private int avgDistanceToGhosts(Game game) {
+		int sum = 0;
+		for(GHOST ghost : GHOST.values())
+			sum += game.getDistance(game.getPacmanCurrentNodeIndex(), game.getGhostCurrentNodeIndex(ghost), DM.MANHATTAN);
+		return sum/4;
 	}
 	
 }

@@ -1,12 +1,16 @@
 package pacman.entries.mcts;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 
 import pacman.Executor;
+import pacman.controllers.Controller;
 import pacman.controllers.examples.AggressiveGhosts;
 import pacman.game.Constants.DM;
+import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
+import pacman.game.Game;
 
 public class MctsNode {
 
@@ -74,7 +78,7 @@ public class MctsNode {
 			if (junction == 540 && nextMove == MOVE.UP){
 				exec=new Executor();
 			}
-			MctsState childState = exec.runExperimentUntilJunction(new AggressiveGhosts(), state.getGame(), junction, nextMove);
+			MctsState childState = runExperimentUntilJunction(new AggressiveGhosts(), state.getGame(), junction, nextMove);
 			if (childState == null || childState.getGame() == null){
 				return this;
 			}
@@ -90,6 +94,42 @@ public class MctsNode {
 		return this;
 		
 	}
+
+	private MctsState runExperimentUntilJunction(Controller<EnumMap<GHOST,MOVE>> ghostController, Game game, int junction, MOVE move) {
+		
+		Game clone = game.copy();
+		/*
+		clone.advanceGame(move,
+        		ghostController.getMove(clone.copy(),System.currentTimeMillis()));
+		*/
+		int livesBefore = clone.getPacmanNumberOfLivesRemaining();
+		int now = clone.getPacmanCurrentNodeIndex();
+		int start = now;
+		while(now != junction){
+
+			int last = now;
+			
+			clone.advanceGame(move,
+		    		ghostController.getMove(clone.copy(),
+		    		System.currentTimeMillis()));
+		    
+			now = clone.getPacmanCurrentNodeIndex();
+			int livesNow = clone.getPacmanNumberOfLivesRemaining();
+			
+			if (livesNow < livesBefore)
+				return new MctsState(false, clone);
+
+			if (now == last){
+				System.out.println("ERROR: Junction not found");
+				break;
+			}
+			
+		}
+		
+		return new MctsState(true, clone);
+		
+	}
+
 
 	private void updateDirection(MOVE move) {
 		switch(move) {

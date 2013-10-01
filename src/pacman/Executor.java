@@ -38,6 +38,7 @@ import pacman.entries.pacman.Ms2PacAstar;
 import pacman.entries.pacman.Ms2PacAstar2;
 import pacman.entries.pacman.Ms2PacAstar3;
 import pacman.entries.pacman.Ms2PacState;
+import pacman.entries.qlearning.QLearner;
 import pacman.game.Game;
 import pacman.game.GameView;
 import static pacman.game.Constants.*;
@@ -77,13 +78,14 @@ public class Executor
 		//exec.runGame(new Ms2PacAstar2(),new StarterGhosts(),visual,delay);
   		//exec.runGame(new RandomJunctionPacman(), new StarterGhosts(), visual, delay);
 		exec.runGame(new MCTS(), new Legacy(), visual, delay);
+		//exec.runGame(new QLearner(), new Legacy(), visual, delay);
 		
 		///*
 		//run the game in asynchronous mode.
 		//boolean visual=true;
 //		exec.runGameTimed(new NearestPillPacMan(),new AggressiveGhosts(),visual);
 		//exec.runGameTimed(new GeneticPacman(),new StarterGhosts(),visual);
-//		exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
+		//exec.runGameTimed(new HumanController(new KeyBoardInput()),new StarterGhosts(),visual);	
 		//*/
 		
 		
@@ -445,41 +447,7 @@ public class Executor
         return replay;
 	}
 
-	public MctsState runExperimentUntilJunction(Controller<EnumMap<GHOST,MOVE>> ghostController, Game game, int junction, MOVE move) {
-		
-		Game clone = game.copy();
-		/*
-		clone.advanceGame(move,
-        		ghostController.getMove(clone.copy(),System.currentTimeMillis()));
-		*/
-		int livesBefore = clone.getPacmanNumberOfLivesRemaining();
-		int first = clone.getPacmanCurrentNodeIndex();
-		int now = clone.getPacmanCurrentNodeIndex();
-		
-		while(now != junction){
-
-			int last = now;
-			
-			clone.advanceGame(move,
-		    		ghostController.getMove(clone.copy(),
-		    		System.currentTimeMillis()));
-		    
-			now = clone.getPacmanCurrentNodeIndex();
-			int livesNow = clone.getPacmanNumberOfLivesRemaining();
-			
-			if (livesNow < livesBefore)
-				return new MctsState(false, clone);
-
-			if (now == last){
-				System.out.println("ERROR: Junction not found");
-				break;
-			}
-			
-		}
-		
-		return new MctsState(true, clone);
-		
-	}
+	
 
 	
 }

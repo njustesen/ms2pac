@@ -64,7 +64,7 @@ public final class Constants
 	public static final int COMMON_LAIR_TIME=40;			//time spend in lair after being eaten
 	public static final int LEVEL_LIMIT=4000;				//time limit for a level
 	public static final float GHOST_REVERSAL=0.0015f;		//probability of a global ghost reversal event	
-	public static final int MAX_TIME=24000000;					//maximum time a game can be played for
+	public static final int MAX_TIME=24000;					//maximum time a game can be played for
 	public static final int AWARD_LIFE_LEFT=800;			//points awarded for every life left at the end of the game (when time runs out)
 	public static final int EXTRA_LIFE_SCORE=10000;			//extra life is awarded when this many points have been collected
 	public static final int EAT_DISTANCE=2;					//distance in the connected graph considered close enough for an eating event to take place
