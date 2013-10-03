@@ -74,10 +74,7 @@ public class MctsNode {
 		
 		if (junction != -1){
 			updateDirection(nextMove);
-			Executor exec=new Executor();
-			if (junction == 540 && nextMove == MOVE.UP){
-				exec=new Executor();
-			}
+			
 			MctsState childState = runExperimentUntilJunction(new AggressiveGhosts(), state.getGame(), junction, nextMove);
 			if (childState == null || childState.getGame() == null){
 				return this;

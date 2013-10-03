@@ -64,21 +64,7 @@ public class GeneticPacman2 extends Controller<MOVE>
 			points.add(game.getGhostCurrentNodeIndex(GHOST.INKY));
 		if (game.isGhostEdible(GHOST.SUE))
 			points.add(game.getGhostCurrentNodeIndex(GHOST.SUE));
-		/*
-		if (game.isGhostEdible(GHOST.BLINKY) && 
-				game.isGhostEdible(GHOST.PINKY) &&
-				game.isGhostEdible(GHOST.INKY) && 
-				game.isGhostEdible(GHOST.SUE)){
-			points = new ArrayList<Integer>();
-			points.add(closestEdibleGhostPosition(game, position, false));
-			/*
-			points.add(game.getGhostCurrentNodeIndex(GHOST.BLINKY));
-			points.add(game.getGhostCurrentNodeIndex(GHOST.PINKY));
-			points.add(game.getGhostCurrentNodeIndex(GHOST.INKY));
-			points.add(game.getGhostCurrentNodeIndex(GHOST.SUE));
-			
-		}
-			*/
+
 		List<Integer> values = new ArrayList<Integer>();
 		
 		for(int j : points){
@@ -92,14 +78,7 @@ public class GeneticPacman2 extends Controller<MOVE>
 			}
 			
 		}
-		/*
-		System.out.print(bestValue + " [");
-		for(int i : values)
-			System.out.print(i + ",");
-		System.out.print("]");
-		System.out.println("");
-		printPath(game, position, bestPath);
-		*/
+
 		if (bestPath.length > 0)
 			return game.getNextMoveTowardsTarget(position, bestPath[0], DM.MANHATTAN);
 		

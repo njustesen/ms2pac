@@ -10,17 +10,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import pacman.Executor;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.AggressiveGhosts;
 import pacman.controllers.examples.Legacy;
+import pacman.controllers.examples.Legacy2TheReckoning;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
+import pacman.game.internal.Maze;
 import pacman.game.internal.Node;
 import pacman.game.Game;
 
@@ -28,32 +32,72 @@ public class MCTS extends Controller<MOVE>{
 
 	public static final int NEW_LIFE_VALUE = 0;
 	public static final int LOST_LIFE_VALUE = -500;
-	private static final int SIM_STEPS = 210;
-	private static final int TREE_TIME_LIMIT = 45;
+	private static final int SIM_STEPS = 200;
+	private static final int TREE_TIME_LIMIT = 40;
 	private static final int MISSUSE_OF_POWER_PILL = -100;
-	private static final int GHOST_DISTANCE = 90;
+	private static final int GHOST_DISTANCE = 200;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
 	Controller<EnumMap<GHOST,MOVE>> ghosts = new Legacy();
 	
-	public static List<Integer> junctions;
-	public int lastLevel = 1;
+	public static Set<Integer> junctions;
+	int lastLevel = 1;
+	Maze maze3;
+	boolean useScript = false;
+	MOVE scriptMove = MOVE.LEFT;
 	
 	@Override
 	public MOVE getMove(Game game, long timeDue) {
 		
-		return MctsSearch(game, 35);
+		int level = game.getCurrentLevel();
+		
+		if (junctions == null || lastLevel != level){
+			junctions = getJunctions(game);
+		}
+		
+		lastLevel = level;
+		
+		return MctsSearch(game, 37);
 		
 	}
 	
+	private MOVE scriptedMove(Game game) {
+		
+		System.out.println("pacman: " + game.getPacmanCurrentNodeIndex());
+		
+		int pacman = game.getPacmanCurrentNodeIndex();
+				
+		if (pacman == 1054)  
+			scriptMove = MOVE.DOWN;
+		else if (pacman == 1199)
+			scriptMove = MOVE.LEFT;
+		else if (pacman == 1187)
+			scriptMove = MOVE.DOWN;
+		else if (pacman == 1321)
+			scriptMove = MOVE.RIGHT;
+		else if (pacman == 1357)
+			scriptMove = MOVE.UP;
+		else if (pacman == 1212)
+			scriptMove = MOVE.LEFT;
+		else if (pacman == 1200)
+			scriptMove = MOVE.UP;
+		
+		if (pacman == 1066){
+			useScript = false;
+			junctions.remove(1199);
+			junctions.remove(1187);
+			junctions.remove(1321);
+			junctions.remove(1357);
+			junctions.remove(1212);
+			junctions.remove(1200);
+			return getMove();
+		}
+		
+		return scriptMove;
+		
+	}
+
 	private MOVE MctsSearch(Game game, long ms) {
-		
-		int level = game.getCurrentLevel();
-		
-		if (junctions == null || lastLevel != level)
-			junctions = getJunctions(game);
-		
-		lastLevel = level;
 		
 		long start = new Date().getTime();
 		MctsNode v0 = new MctsNode(new MctsState(true, game), null, game.getPacmanLastMoveMade(), 0);
@@ -108,9 +152,6 @@ public class MCTS extends Controller<MOVE>{
 			float value = UCT(node, c);
 			if (!node.getState().isAlive())
 				value = -99999;
-			
-			
-				//System.out.println(node.move + "(c=" + c + " : " + value);
 			
 			if (value > bestValue){
 				if (c != 0 || dieTest(v, node)){
@@ -195,8 +236,8 @@ public class MCTS extends Controller<MOVE>{
 	}
 	
 
-	public static List<Integer> getJunctions(Game game){
-		List<Integer> junctions = new ArrayList<Integer>();
+	public static Set<Integer> getJunctions(Game game){
+		Set<Integer> junctions = new HashSet<Integer>();
 		
 		int[] juncArr = game.getJunctionIndices();
 		for(Integer i : juncArr)
@@ -241,8 +282,12 @@ public class MCTS extends Controller<MOVE>{
 		int ppBefore = game.getNumberOfActivePowerPills();
 		int s = 0;
 		int bonus = 0;
-		while(!game.gameOver() && s < steps)
+		while(!game.gameOver())
 		{
+			if (s >= steps && game.getNeighbouringNodes(game.getPacmanCurrentNodeIndex()).length > 2)
+				break;
+			
+			
 	        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()),
 	        		ghostController.getMove(game.copy(),System.currentTimeMillis()));
 	        s++;

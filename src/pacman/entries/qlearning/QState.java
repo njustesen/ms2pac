@@ -17,9 +17,16 @@ public class QState {
 	boolean edibleRight;
 	int distanceLeft;
 	boolean edibleLeft;
+	
+	boolean firstPP;
+	boolean secondPP;
+	boolean thirdPP;
+	boolean fourthPP;
+	
 	public QState(int level, int junction, int distanceUp, boolean edibleUp,
 			int distanceDown, boolean edibleDown, int distanceRight,
-			boolean edibleRight, int distanceLeft, boolean edibleLeft) {
+			boolean edibleRight, int distanceLeft, boolean edibleLeft, 
+			boolean firstPP, boolean secondPP, boolean thirdPP, boolean fourthPP) {
 		super();
 		this.level = level;
 		this.junction = junction;
@@ -31,6 +38,10 @@ public class QState {
 		this.edibleRight = edibleRight;
 		this.distanceLeft = distanceLeft;
 		this.edibleLeft = edibleLeft;
+		this.firstPP = firstPP;
+		this.secondPP = secondPP;
+		this.thirdPP = thirdPP;
+		this.fourthPP = fourthPP;
 	}
 	
 	public QState(Game game) {
@@ -38,6 +49,28 @@ public class QState {
 		this.level = game.getCurrentLevel();
 		this.junction = game.getPacmanCurrentNodeIndex();
 		setDistanceAndEdible(game, MOVE.UP);
+		setDistanceAndEdible(game, MOVE.RIGHT);
+		setDistanceAndEdible(game, MOVE.LEFT);
+		setDistanceAndEdible(game, MOVE.DOWN);
+		
+		this.secondPP = false;
+		this.firstPP = false;
+		this.thirdPP = false;
+		this.fourthPP = false;
+		
+		int [] pps = game.getCurrentMaze().powerPillIndices;
+		for (int i = 0; i < pps.length; i++){
+			for(Integer a : game.getActivePowerPillsIndices()){
+				if (pps[i] == a){
+					switch(i){
+					case 0 : this.secondPP = true; break;
+					case 1 : this.firstPP = true; break;
+					case 2 : this.thirdPP = true; break;
+					case 3 : this.fourthPP = true; break;
+					}
+				}
+			}
+		}
 			
 	}
 	
@@ -47,8 +80,12 @@ public class QState {
 		boolean edible = false;
 		for(GHOST ghost : GHOST.values()){
 			
-			int ghostPos = game.getGhostCurrentNodeIndex(ghost);
-			int distance = (int) game.getDistance(game.getPacmanCurrentNodeIndex(), ghostPos, move, DM.MANHATTAN);
+			int distance = 256;
+			if (game.getGhostLairTime(ghost) == 0){
+				int ghostPos = game.getGhostCurrentNodeIndex(ghost);
+				int[] path = game.getShortestPath(game.getPacmanCurrentNodeIndex(), ghostPos, move);
+				distance = path.length;
+			}
 			
 			if (distance < shortest){
 				shortest = distance;
@@ -74,7 +111,7 @@ public class QState {
 
 		int n = 1;
 		while(i > n){
-			n = n * 2;
+			n = n * 4;
 		}
 		return n;
 		
@@ -141,6 +178,40 @@ public class QState {
 		this.edibleLeft = edibleLeft;
 	}
 
+	
+	
+	public boolean isFirstPP() {
+		return firstPP;
+	}
+
+	public void setFirstPP(boolean firstPP) {
+		this.firstPP = firstPP;
+	}
+
+	public boolean isSecondPP() {
+		return secondPP;
+	}
+
+	public void setSecondPP(boolean secondPP) {
+		this.secondPP = secondPP;
+	}
+
+	public boolean isThirdPP() {
+		return thirdPP;
+	}
+
+	public void setThirdPP(boolean thirdPP) {
+		this.thirdPP = thirdPP;
+	}
+
+	public boolean isFourthPP() {
+		return fourthPP;
+	}
+
+	public void setFourthPP(boolean fourthPP) {
+		this.fourthPP = fourthPP;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -153,8 +224,12 @@ public class QState {
 		result = prime * result + (edibleLeft ? 1231 : 1237);
 		result = prime * result + (edibleRight ? 1231 : 1237);
 		result = prime * result + (edibleUp ? 1231 : 1237);
+		result = prime * result + (firstPP ? 1231 : 1237);
+		result = prime * result + (fourthPP ? 1231 : 1237);
 		result = prime * result + junction;
 		result = prime * result + level;
+		result = prime * result + (secondPP ? 1231 : 1237);
+		result = prime * result + (thirdPP ? 1231 : 1237);
 		return result;
 	}
 
@@ -183,13 +258,20 @@ public class QState {
 			return false;
 		if (edibleUp != other.edibleUp)
 			return false;
+		if (firstPP != other.firstPP)
+			return false;
+		if (fourthPP != other.fourthPP)
+			return false;
 		if (junction != other.junction)
 			return false;
 		if (level != other.level)
 			return false;
+		if (secondPP != other.secondPP)
+			return false;
+		if (thirdPP != other.thirdPP)
+			return false;
 		return true;
 	}
-	
-	
+
 	
 }

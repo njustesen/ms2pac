@@ -1,29 +1,14 @@
 package pacman.entries.qlearning;
 
-import static pacman.game.Constants.DELAY;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 
-import pacman.Executor;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.AggressiveGhosts;
-import pacman.controllers.examples.Legacy;
-import pacman.controllers.examples.StarterGhosts;
-import pacman.entries.mcts.MCTS;
-import pacman.entries.mcts.MctsNode;
-import pacman.entries.mcts.MctsState;
-import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.internal.Node;
@@ -55,21 +40,29 @@ public class QLearner extends Controller<MOVE>{
 		// Save state if in junction
 		int pacman = game.getPacmanCurrentNodeIndex();
 		if (junctions.contains(pacman)){
-			QState state = new QState(game);
+			QState state = new QState(game.copy());
 			if (!visited.contains(state))
 				visited.add(state);
 		}
 		
 		// Choose best action
-		return bestAction(game);
+		return bestAction(game, exploit);
 		
 	}
 	
-	private MOVE bestAction(Game game) {
+	private MOVE bestAction(Game game, float exploit) {
 		
+		// Explore
+		List<QMove> moves = getPossblesMoves(game);
+		if (Math.random() > exploit){
+			int idx = (int) (Math.random() * moves.size());
+			return moves.get(idx).getMove();
+		}
+		
+		// Exploit
 		QMove bestMove = null;
 		float bestValue = -9999f;
-		for(QMove move : getPossblesMoves(game)){
+		for(QMove move : moves){
 			
 			float value = 0;
 			if (states.containsKey(move.getState())){

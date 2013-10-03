@@ -140,39 +140,7 @@ public class Executor
 		System.out.println(avgScore/trials);
     }
     
-    /**
-     * For running multiple games without visuals. This is useful to get a good idea of how well a controller plays
-     * against a chosen opponent: the random nature of the game means that performance can vary from game to game. 
-     * Running many games and looking at the average score (and standard deviation/error) helps to get a better
-     * idea of how well the controller is likely to do in the competition.
-     *
-     * @param pacManController The Pac-Man controller
-     * @param ghostController The Ghosts controller
-     * @param trials The number of trials to be executed
-     */
-    public double runExperimentWithAvgScore(Controller<MOVE> pacManController,Controller<EnumMap<GHOST,MOVE>> ghostController,int trials)
-    {
-    	double avgScore=0;
-    	
-    	Random rnd=new Random(0);
-		Game game;
-		
-		for(int i=0;i<trials;i++)
-		{
-			game=new Game(rnd.nextLong());
-			
-			while(!game.gameOver())
-			{
-		        game.advanceGame(pacManController.getMove(game.copy(),System.currentTimeMillis()+DELAY),
-		        		ghostController.getMove(game.copy(),System.currentTimeMillis()+DELAY));
-			}
-			
-			avgScore+=game.getScore();
-			System.out.println(i+"\t"+game.getScore());
-		}
-		
-		return avgScore/trials;
-    }
+    
 	
 	/**
 	 * Run a game in asynchronous mode: the game waits until a move is returned. In order to slow thing down in case
