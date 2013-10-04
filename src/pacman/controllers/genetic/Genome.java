@@ -19,6 +19,8 @@ public class Genome {
 	private int dangerDistance;
 	private int killDistance;
 	
+	private int mutated;
+	
 	// Path value in FLEE state
 	/*
 	private int distanceToGhostsValue;
@@ -46,6 +48,7 @@ public class Genome {
 		this.stepValue = stepValue;
 		this.dangerDistance = dangerDistance;
 		this.killDistance = killDistance;
+		this.mutated = 0;
 	}
 	
 	public int getDangerDistance() {
@@ -120,10 +123,18 @@ public class Genome {
 		this.killDistance = killDistance;
 	}
 
+	public int getMutated() {
+		return mutated;
+	}
+
+	public void setMutated(int mutated) {
+		this.mutated = mutated;
+	}
+
 	public static Genome randomGenome() {
 		
 		int pillValue = (int) (-1000 + Math.random() * 2000);
-		double pillMultiplier = -10.0 + Math.random() * 10.0;
+		double pillMultiplier = -10.0 + Math.random() * 20.0;
 		int powerPillValue = (int) (-1000 + Math.random() * 2000);
 		int ghostValue = (int) (-10000 + Math.random() * 20000);
 		int deathValue = (int) (-10000 + Math.random() * 20000);
@@ -177,18 +188,23 @@ public class Genome {
 	public void mutate() {
 		
 		Genome randomGenome = Genome.randomGenome();
-		int x = (int) (Math.random() * 9);
-		switch(x){
-		case 0 : pillValue = randomGenome.getPillValue(); break;
-		case 1 : pillMultiplier = randomGenome.getPillMultiplier(); break;
-		case 2 : powerPillValue = randomGenome.getPowerPillValue(); break;
-		case 3 : ghostValue = randomGenome.getGhostValue(); break;
-		case 4 : deathValue = randomGenome.getDeathValue(); break;
-		case 5 : winValue = randomGenome.getWinValue(); break;
-		case 6 : stepValue = randomGenome.getStepValue(); break;
-		case 7 : dangerDistance = randomGenome.getDangerDistance(); break;
-		case 8 : killDistance = randomGenome.getKillDistance(); break;
+		for(int x = 0; x < 9; x++){
+			if (Math.random() < 1f/9f){
+				mutated++;
+				switch(x){
+				case 0 : pillValue = randomGenome.getPillValue(); break;
+				case 1 : pillMultiplier = randomGenome.getPillMultiplier(); break;
+				case 2 : powerPillValue = randomGenome.getPowerPillValue(); break;
+				case 3 : ghostValue = randomGenome.getGhostValue(); break;
+				case 4 : deathValue = randomGenome.getDeathValue(); break;
+				case 5 : winValue = randomGenome.getWinValue(); break;
+				case 6 : stepValue = randomGenome.getStepValue(); break;
+				case 7 : dangerDistance = randomGenome.getDangerDistance(); break;
+				case 8 : killDistance = randomGenome.getKillDistance(); break;
+				}
+			}
 		}
+		
 		
 	}
 
@@ -199,7 +215,7 @@ public class Genome {
 				+ ", ghostValue=" + ghostValue + ", deathValue=" + deathValue
 				+ ", winValue=" + winValue + ", stepValue=" + stepValue
 				+ ", dangerDistance=" + dangerDistance + ", killDistance="
-				+ killDistance + "]";
+				+ killDistance + " mutated=" + mutated + "]";
 	}
 	
 }

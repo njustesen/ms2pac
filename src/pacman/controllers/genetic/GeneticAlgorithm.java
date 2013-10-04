@@ -6,18 +6,17 @@ public abstract class GeneticAlgorithm {
 	
 	protected int size;
 	protected int generations;
-	protected int mutationChange;
+	protected int mutationRate;
 	protected int trials;
 	
-	public GeneticAlgorithm(int size, int generations, int mutationChange, int trials){
+	public GeneticAlgorithm(int size, int generations, int mutationRate, int trials){
 		this.size = size;
 		this.generations = generations;
-		this.mutationChange = mutationChange;
+		this.mutationRate = mutationRate;
 		this.trials = trials;
 	}
 	
 	public abstract Genome getBest();
-	public abstract double fitness(Genome genome);
 
 	public int getSize() {
 		return size;
@@ -35,12 +34,12 @@ public abstract class GeneticAlgorithm {
 		this.generations = generations;
 	}
 
-	public int getMutationChange() {
-		return mutationChange;
+	public int getMutationRate() {
+		return mutationRate;
 	}
 
-	public void setMutationChange(int mutationChange) {
-		this.mutationChange = mutationChange;
+	public void setMutationRate(int mutationRate) {
+		this.mutationRate = mutationRate;
 	}
 
 	public int getTrials() {

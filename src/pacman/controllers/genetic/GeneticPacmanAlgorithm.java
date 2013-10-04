@@ -2,20 +2,12 @@ package pacman.controllers.genetic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
-import pacman.Executor;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.Legacy;
-import pacman.controllers.examples.StarterGhosts;
 import pacman.game.Game;
-import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 
 public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
@@ -25,7 +17,8 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 	public static void main(String[] args)
 	{
 		
-		GeneticPacmanAlgorithm alg = new GeneticPacmanAlgorithm(25, 40, 10, 3);
+		//GeneticPacmanAlgorithm alg = new GeneticPacmanAlgorithm(25, 40, 80, 3);
+		GeneticPacmanAlgorithm alg = new GeneticPacmanAlgorithm(4, 40, 80, 1);
 		alg.getBest();
 		
 	}
@@ -49,7 +42,8 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 			int idx = 0;
 			for(Genome genome : population){
 				
-				double score = runExperimentWithAvgScore(new GeneticPacman2(genome), new Legacy(), 3);
+				System.out.println("Testing fitness for: " + genome);
+				double score = runExperimentWithAvgScore(new GeneticPacman2(genome), new Legacy(), trials); 
 				scores[idx] = score;
 				idx++;
 				
@@ -57,31 +51,45 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 			
 			// Kill
 			int killings = size / 2;
-			double[] clone = new double[scores.length];
 			
 			double bestScore = -999999;
 			double sum = 0;
 			for(int i=0; i<scores.length;i++){
-				clone[i]=scores[i];
 				sum += scores[i];
-				if (clone[i] > bestScore){
-					bestScore = clone[i];
+				if (scores[i] > bestScore){
+					bestScore = scores[i];
 					bestGenome = population.get(i);
 				}
 			}
 			System.out.println("Best of generation " + g + ": " + bestScore + " avg: " + sum/scores.length + " - " + bestGenome);
-			Arrays.sort(clone);
 			
 			// Stop if last generation
 			if (g == generations-1)
 				return bestGenome;
 			
-			double surviveLimit = clone[clone.length-killings];
-			
 			List<Genome> survivors = new ArrayList<Genome>();
-			for(int i=0; i<scores.length;i++){
-				if (scores[i] > surviveLimit)
-					survivors.add(population.get(i));
+			List<Genome> killedGenomes = new ArrayList<Genome>();
+			
+			int killed = 0;
+			while(killed < killings){
+				
+				double worstScore = 999999999;
+				Genome worstGenome = null;
+				for(int i = 0; i < population.size(); i++){
+					Genome genome = population.get(i);
+					if (scores[i] < worstScore && !killedGenomes.contains(genome)){
+						worstScore = scores[i];
+						worstGenome = genome;
+					}
+				}
+				killedGenomes.add(worstGenome);
+				killed++;
+			}
+			
+			
+			for(Genome genome : population){
+				if (!killedGenomes.contains(genome))
+					survivors.add(genome);
 			}
 			
 			// Reproduce
@@ -91,9 +99,11 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 			for(int i = 0; i<survivors.size();i++){
 				
 				Genome parentA = survivors.get(i);
-				Genome parentB = survivors.get(0);
-				if (i+1 < survivors.size())
-					parentB = survivors.get(i+1);
+				int other = i;
+				while(other == i)
+					other = (int) (Math.random() * survivors.size());
+				
+				Genome parentB = survivors.get(other);
 				
 				Genome child = Genome.breedChild(parentA, parentB);
 				nextGeneration.add(child);
@@ -102,7 +112,7 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 			
 			// Mutate
 			for(Genome genome : nextGeneration){
-				if (Math.random() * 100 <= mutationChange && genome != bestGenome){
+				if (Math.random() * 100 <= this.mutationRate && genome != bestGenome){
 					genome.mutate();
 				}
 			}
@@ -149,12 +159,6 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 		
 		return population;
 		
-	}
-
-	@Override
-	public double fitness(Genome genome) {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 }
