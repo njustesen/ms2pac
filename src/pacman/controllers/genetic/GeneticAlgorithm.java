@@ -16,7 +16,7 @@ public abstract class GeneticAlgorithm {
 		this.trials = trials;
 	}
 	
-	public abstract Genome getBest();
+	public abstract Genome getBest(List<Genome> population);
 
 	public int getSize() {
 		return size;

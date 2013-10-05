@@ -51,6 +51,40 @@ public class Genome {
 		this.mutated = 0;
 	}
 	
+	public Genome(String str){
+				 
+		String[] values = str.split(", ");
+		for(String value : values){
+			
+			String val = value.replace(",", "");
+			val = val.replace(" ", "");
+			String[] pair = val.split("=");
+			
+			if(pair[0].equals("pillValue"))
+				this.pillValue = Integer.parseInt(pair[1]);
+			else if(pair[0].equals("pillMultiplier"))
+				this.pillMultiplier = Float.parseFloat(pair[1]);
+			else if(pair[0].equals("powerPillValue"))
+				this.powerPillValue = Integer.parseInt(pair[1]);
+			else if(pair[0].equals("ghostValue"))
+				this.ghostValue = Integer.parseInt(pair[1]);
+			else if(pair[0].equals("deathValue"))
+				this.deathValue = Integer.parseInt(pair[1]);
+			else if(pair[0].equals("winValue"))
+				this.winValue = Integer.parseInt(pair[1]);
+			else if(pair[0].equals("stepValue"))
+				this.stepValue = Integer.parseInt(pair[1]);
+			else if(pair[0].equals("dangerDistance"))
+				this.dangerDistance = Integer.parseInt(pair[1]);
+			else if(pair[0].equals("killDistance"))
+				this.killDistance = Integer.parseInt(pair[1]);
+			else if(pair[0].equals("mutated"))
+				this.mutated = Integer.parseInt(pair[1]);
+			
+		}
+		
+	}
+	
 	public int getDangerDistance() {
 		return dangerDistance;
 	}
@@ -215,7 +249,7 @@ public class Genome {
 				+ ", ghostValue=" + ghostValue + ", deathValue=" + deathValue
 				+ ", winValue=" + winValue + ", stepValue=" + stepValue
 				+ ", dangerDistance=" + dangerDistance + ", killDistance="
-				+ killDistance + " mutated=" + mutated + "]";
+				+ killDistance + ", mutated=" + mutated + "]";
 	}
 	
 }

@@ -18,8 +18,15 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 	{
 		
 		//GeneticPacmanAlgorithm alg = new GeneticPacmanAlgorithm(25, 40, 80, 3);
+		//GeneticPacmanAlgorithm alg = new GeneticPacmanAlgorithm(4, 40, 80, 1);
 		GeneticPacmanAlgorithm alg = new GeneticPacmanAlgorithm(4, 40, 80, 1);
-		alg.getBest();
+		
+		//alg.getBest(null);
+		
+		List<Genome> population = new ArrayList<Genome>();
+		Genome a = new Genome("pillValue=-130, pillMultiplier=-1.070768116311136, powerPillValue=912, ghostValue=5081, deathValue=-3728, winValue=5268, stepValue=-868, dangerDistance=39, killDistance=30, mutated=0");
+		population.add(a);
+		alg.getBest(population);
 		
 	}
 
@@ -27,12 +34,13 @@ public class GeneticPacmanAlgorithm extends GeneticAlgorithm {
 		super(size, generations, mutationRate, trials);
 		
 	}
-
+	
 	@Override
-	public Genome getBest() {
+	public Genome getBest(List<Genome> population) {
 		
 		// Populate
-		List<Genome> population = newPopulation();
+		if (population == null)
+			population = newPopulation();
 		
 		Genome bestGenome = null;
 		for(int g = 0; g < generations; g++){
