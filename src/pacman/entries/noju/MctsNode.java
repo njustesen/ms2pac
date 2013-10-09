@@ -1,4 +1,4 @@
-package pacman.entries.mcts;
+package pacman.entries.noju;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -81,7 +81,7 @@ public class MctsNode {
 			}
 			
 			int to = childState.getGame().getPacmanCurrentNodeIndex();
-			int distance = (int) state.getGame().getDistance(pacman, to, DM.MANHATTAN);
+			int distance = (int) state.getGame().getDistance(pacman, to, DM.PATH);
 			
 			MctsNode child = new MctsNode(childState, this, nextMove, time + distance);
 			children.add(child);
@@ -145,7 +145,7 @@ public class MctsNode {
 		if (current == -1)
 			return -1;
 		
-		while(!MCTS.junctions.contains(current) || current == from){
+		while(!MCTSNIELS.junctions.contains(current) || current == from){
 			
 			int next = state.getGame().getNeighbour(current, move);
 			

@@ -1,74 +1,64 @@
 package pacman.entries.qlearning;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-
+import java.util.Map;
 import pacman.controllers.Controller;
-import pacman.controllers.examples.AggressiveGhosts;
-import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.internal.Node;
 import pacman.game.Game;
 
 public class QLearner extends Controller<MOVE>{
 
-	private final float NEW_VALUE = 500000f;
+	private QTable table;
+	private MOVE lastMove;
+	private List<Integer> junctions;
+	private int lastLevel = -1;
 	
-	public HashMap<QState, Integer> states = new HashMap<QState, Integer>();
-	public HashSet<QState> visited = new HashSet<QState>(); 
-	public List<Integer> junctions;
-	public int lastLevel = -1;
-	
-	public QLearner(HashMap<QState, Integer> states){
+	public QLearner(QTable table){
 		super();
-		this.states = states;
+		this.table = table;
+		this.lastMove = MOVE.LEFT;
 	}
 	
-	public MOVE getMove(Game game, float exploit) {	
+	public MOVE bestMove(Game game, float exploit, boolean inJunction) {
 		
-		int level = game.getCurrentLevel();
+		// In junction
+		if (!inJunction)
+			return lastMove;
 		
-		if (junctions == null || lastLevel != level)
-			junctions = getJunctions(game);
+		// Strategy
+		if (Math.random() > exploit)
+			return explore(game);
 		
-		lastLevel = level;
-		
-		// Save state if in junction
-		int pacman = game.getPacmanCurrentNodeIndex();
-		if (junctions.contains(pacman)){
-			QState state = new QState(game.copy());
-			if (!visited.contains(state))
-				visited.add(state);
-		}
-		
-		// Choose best action
-		return bestAction(game, exploit);
+		return exploit(game);
 		
 	}
-	
-	private MOVE bestAction(Game game, float exploit) {
+
+	private MOVE explore(Game game) {
+
+		List<MOVE> moves = getPossblesMoves(game);
+		int idx = (int) (Math.random() * moves.size());
+		lastMove = moves.get(idx);
+		return lastMove;
 		
-		// Explore
-		List<QMove> moves = getPossblesMoves(game);
-		if (Math.random() > exploit){
-			int idx = (int) (Math.random() * moves.size());
-			return moves.get(idx).getMove();
-		}
+	}
+
+	private MOVE exploit(Game game) {
 		
-		// Exploit
-		QMove bestMove = null;
+		MOVE bestMove = null;
 		float bestValue = -9999f;
-		for(QMove move : moves){
+		QState state = new QState(game.copy());
+		Map<MOVE, Float> map = table.get(state);
+		List<MOVE> newMoves = new ArrayList<MOVE>();
+		
+		for(MOVE move : getPossblesMoves(game)){
 			
-			float value = 0;
-			if (states.containsKey(move.getState())){
-				value = states.get(move.getState());
+			float value = -10000f;
+			if (map.containsKey(move)){
+				value = map.get(move);
 			} else {
-				value = NEW_VALUE;
+				newMoves.add(move);
 			}
 			
 			if (value > bestValue){
@@ -78,125 +68,49 @@ public class QLearner extends Controller<MOVE>{
 			
 		}
 		
-		if (bestMove == null){
-			return MOVE.DOWN;
-		}
+		if (bestMove == null)
+			bestMove = explore(game);
 		
-		return bestMove.getMove();
+		lastMove = bestMove;
 		
+		return bestMove;
 	}
 
-
-	private List<QMove> getPossblesMoves(Game game) {
+	private List<MOVE> getPossblesMoves(Game game) {
 		
-		List<QMove> moves = new ArrayList<QMove>();
+		int pacman = game.getPacmanCurrentNodeIndex();
+		List<MOVE> moves = new ArrayList<MOVE>();
 		
-		for(MOVE move : MOVE.values()){
-			
-			Game result = simulateUntilJunction(game, move);
-			if (result == null)
-				continue;
-			
-			QState state = new QState(result);
-			moves.add(new QMove(move, state));
-			
-		}
+		if(game.getNeighbour(pacman, MOVE.UP) != -1)
+			moves.add(MOVE.UP);
+		if(game.getNeighbour(pacman, MOVE.DOWN) != -1)
+			moves.add(MOVE.DOWN);
+		if(game.getNeighbour(pacman, MOVE.RIGHT) != -1)
+			moves.add(MOVE.RIGHT);
+		if(game.getNeighbour(pacman, MOVE.LEFT) != -1)
+			moves.add(MOVE.LEFT);
 		
 		return moves;
 		
 	}
 
-	private Game simulateUntilJunction(Game game, MOVE move) {
+	@Override
+	public MOVE getMove(Game game, long timeDue) {
 		
-		int pacman = game.getPacmanCurrentNodeIndex();
-		int junction = -1;
+		int currentLevel = game.getCurrentLevel();
+		boolean inJunction = false;
 		
-		// Closest junctions
-		if (game.getNeighbour(pacman, move) != -1){
-			junction = closestJunction(game, move);
-		} else {
-			return null;
+		if (lastLevel != currentLevel){
+			junctions = getJunctions(game);
+			lastLevel = currentLevel;
 		}
 		
-		if (junction == -1)
-			return null;
-			
-		Game result = runExperimentUntilJunction(new AggressiveGhosts(), game, junction, move);
+		if (junctions.contains(game.getPacmanCurrentNodeIndex()))
+			inJunction = true;
 		
-		return result;
-		
+		return bestMove(game, 1.0f, inJunction);
 	}
-
-	private Game runExperimentUntilJunction(Controller<EnumMap<GHOST,MOVE>> ghostController, Game game, int junction, MOVE move) {
-		
-		Game clone = game.copy();
-
-		int now = clone.getPacmanCurrentNodeIndex();
-		
-		while(now != junction){
-
-			int last = now;
-			
-			clone.advanceGame(move,
-		    		ghostController.getMove(clone.copy(),
-		    		System.currentTimeMillis()));
-		    
-			now = clone.getPacmanCurrentNodeIndex();
-
-			if (now == last){
-				//System.out.println("ERROR: Junction not found");
-				break;
-			}
-			
-		}
-		
-		return clone;
-		
-	}
-
-	private int closestJunction(Game game, MOVE move) {
-		
-		int from = game.getPacmanCurrentNodeIndex();
-		int current = from;
-		if (current == -1)
-			return -1;
-		
-		while(!junctions.contains(current) || current == from){
-			
-			int next = game.getNeighbour(current, move);
-			
-			if (next == from)
-				return -1;
-			
-			current = next;
-			if (current == -1)
-				return -1;
-			
-		}
-		
-		return current;
-		
-	}
-
-	private boolean dieTest(Game game, MOVE move) {
-		
-		Controller<EnumMap<GHOST,MOVE>> ghostController = new AggressiveGhosts();
-    	
-		Game clone = game.copy();
-			
-		int livesBefore = clone.getPacmanNumberOfLivesRemaining();
-		
-		clone.advanceGame(move,
-	        	ghostController.getMove(clone.copy(),100000));
-	        
-	    int livesAfter = clone.getPacmanNumberOfLivesRemaining();
-		if (livesAfter < livesBefore)
-			return false;
-		
-		return true;
-		
-	}
-
+	
 	public static List<Integer> getJunctions(Game game){
 		List<Integer> junctions = new ArrayList<Integer>();
 		
@@ -210,7 +124,7 @@ public class QLearner extends Controller<MOVE>{
 		
 	}
 	
-	private static Collection<? extends Integer> getTurns(Game game) {
+	private static List<Integer> getTurns(Game game) {
 		
 		List<Integer> turns = new ArrayList<Integer>();
 		
@@ -231,11 +145,4 @@ public class QLearner extends Controller<MOVE>{
 		
 		return turns;
 	}
-
-	@Override
-	public MOVE getMove(Game game, long timeDue) {
-		return getMove(game, 1.0f);
-	}
-	
-	
 }

@@ -1,27 +1,26 @@
 package pacman.entries.qlearning;
 
-import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
 import pacman.game.Game;
 
 public class QState {
 
-	int level;
-	int junction;
-	int distanceUp;
-	boolean edibleUp;
-	int distanceDown;
-	boolean edibleDown;
-	int distanceRight;
-	boolean edibleRight;
-	int distanceLeft;
-	boolean edibleLeft;
+	int level; 			// 2
+	int junction; 		// 64
+	int distanceUp;		// 5
+	boolean edibleUp;	// 2
+	int distanceDown;	// 5
+	boolean edibleDown;	// 2
+	int distanceRight;	// 5
+	boolean edibleRight;// 2
+	int distanceLeft;	// 5
+	boolean edibleLeft;	// 2
 	
-	boolean firstPP;
-	boolean secondPP;
-	boolean thirdPP;
-	boolean fourthPP;
+	boolean firstPP;	// 2
+	boolean secondPP;	// 2
+	boolean thirdPP;	// 2
+	boolean fourthPP;	// 2
 	
 	public QState(int level, int junction, int distanceUp, boolean edibleUp,
 			int distanceDown, boolean edibleDown, int distanceRight,

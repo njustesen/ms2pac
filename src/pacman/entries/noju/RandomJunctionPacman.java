@@ -1,4 +1,4 @@
-package pacman.entries.mcts;
+package pacman.entries.noju;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,8 +22,8 @@ public class RandomJunctionPacman extends Controller<MOVE>
 	
 	public MOVE getMove(Game game, long timeDue) {
 		
-		if (MCTS.junctions == null)
-			MCTS.junctions = MCTS.getJunctions(game);
+		if (MCTSNIELS.junctions == null)
+			MCTSNIELS.junctions = MCTSNIELS.getJunctions(game);
 			
 		
 		MOVE lastMove = game.getPacmanLastMoveMade();
@@ -37,7 +37,7 @@ public class RandomJunctionPacman extends Controller<MOVE>
 	
 	private boolean inJunction(Game game) {
 		
-		if (MCTS.junctions.contains(game.getPacmanCurrentNodeIndex()))
+		if (MCTSNIELS.junctions.contains(game.getPacmanCurrentNodeIndex()))
 			return true;
 		
 		return false;

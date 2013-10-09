@@ -1,4 +1,4 @@
-package pacman.entries.mcts;
+package pacman.entries.noju;
 
 import pacman.game.Game;
 

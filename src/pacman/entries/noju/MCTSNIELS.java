@@ -1,4 +1,4 @@
-package pacman.entries.mcts;
+package pacman.entries.noju;
 
 import static pacman.game.Constants.DELAY;
 
@@ -28,12 +28,12 @@ import pacman.game.internal.Maze;
 import pacman.game.internal.Node;
 import pacman.game.Game;
 
-public class MCTS extends Controller<MOVE>{
+public class MCTSNIELS extends Controller<MOVE>{
 
 	public static final int NEW_LIFE_VALUE = 0;
 	public static final int LOST_LIFE_VALUE = -500;
 	private static final int SIM_STEPS = 200;
-	private static final int TREE_TIME_LIMIT = 40;
+	private static final int TREE_TIME_LIMIT = 55;
 	private static final int MISSUSE_OF_POWER_PILL = -100;
 	private static final int GHOST_DISTANCE = 200;
 	// Hoeffding ineqality
@@ -57,43 +57,7 @@ public class MCTS extends Controller<MOVE>{
 		
 		lastLevel = level;
 		
-		return MctsSearch(game, 37);
-		
-	}
-	
-	private MOVE scriptedMove(Game game) {
-		
-		System.out.println("pacman: " + game.getPacmanCurrentNodeIndex());
-		
-		int pacman = game.getPacmanCurrentNodeIndex();
-				
-		if (pacman == 1054)  
-			scriptMove = MOVE.DOWN;
-		else if (pacman == 1199)
-			scriptMove = MOVE.LEFT;
-		else if (pacman == 1187)
-			scriptMove = MOVE.DOWN;
-		else if (pacman == 1321)
-			scriptMove = MOVE.RIGHT;
-		else if (pacman == 1357)
-			scriptMove = MOVE.UP;
-		else if (pacman == 1212)
-			scriptMove = MOVE.LEFT;
-		else if (pacman == 1200)
-			scriptMove = MOVE.UP;
-		
-		if (pacman == 1066){
-			useScript = false;
-			junctions.remove(1199);
-			junctions.remove(1187);
-			junctions.remove(1321);
-			junctions.remove(1357);
-			junctions.remove(1212);
-			junctions.remove(1200);
-			return getMove();
-		}
-		
-		return scriptMove;
+		return MctsSearch(game, 36);
 		
 	}
 
@@ -305,9 +269,9 @@ public class MCTS extends Controller<MOVE>{
 		
 		int livesAfter = game.getPacmanNumberOfLivesRemaining();
 		if (livesAfter > livesBefore){
-			score += MCTS.NEW_LIFE_VALUE;
+			score += NEW_LIFE_VALUE;
 		} else if (livesAfter < livesBefore){
-			score += MCTS.LOST_LIFE_VALUE;
+			score += LOST_LIFE_VALUE;
 		}
 		
 		return score + bonus;
@@ -316,7 +280,7 @@ public class MCTS extends Controller<MOVE>{
 	private int avgDistanceToGhosts(Game game) {
 		int sum = 0;
 		for(GHOST ghost : GHOST.values())
-			sum += game.getDistance(game.getPacmanCurrentNodeIndex(), game.getGhostCurrentNodeIndex(ghost), DM.MANHATTAN);
+			sum += game.getDistance(game.getPacmanCurrentNodeIndex(), game.getGhostCurrentNodeIndex(ghost), DM.PATH);
 		return sum/4;
 	}
 	

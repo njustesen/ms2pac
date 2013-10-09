@@ -27,10 +27,10 @@ import pacman.controllers.genetic.GeneticPacman;
 import pacman.controllers.genetic.GeneticPacman1;
 import pacman.controllers.genetic.GeneticPacman2;
 import pacman.controllers.genetic.Genome;
-import pacman.entries.mcts.MCTS;
-import pacman.entries.mcts.MctsState;
-import pacman.entries.mcts.RandomJunctionPacman;
-import pacman.entries.mcts.RandomPacman;
+import pacman.entries.noju.MCTSNIELS;
+import pacman.entries.noju.MctsState;
+import pacman.entries.noju.RandomJunctionPacman;
+import pacman.entries.noju.RandomPacman;
 import pacman.entries.pacman.BTreePacman;
 import pacman.entries.pacman.BTreePacman2;
 import pacman.entries.pacman.Ms2Pac;
@@ -77,7 +77,7 @@ public class Executor
 		//exec.runGame(new GeneticPacman2(new Genome(754, -3.80047351578399, 855, 5437, -3029, -7990, 360, 37, 4)),new StarterGhosts(),visual,delay);
 		//exec.runGame(new Ms2PacAstar2(),new StarterGhosts(),visual,delay);
   		//exec.runGame(new RandomJunctionPacman(), new StarterGhosts(), visual, delay);
-		exec.runGame(new MCTS(), new Legacy(), visual, delay);
+		exec.runGame(new MCTSNIELS(), new Legacy(), visual, delay);
 		//exec.runGame(new QLearner(), new Legacy(), visual, delay);
 		
 		///*
