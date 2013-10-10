@@ -77,9 +77,15 @@ public class Executor
 		//exec.runGame(new GeneticPacman2(new Genome(754, -3.80047351578399, 855, 5437, -3029, -7990, 360, 37, 4)),new StarterGhosts(),visual,delay);
 		//exec.runGame(new Ms2PacAstar2(),new StarterGhosts(),visual,delay);
   		//exec.runGame(new RandomJunctionPacman(), new StarterGhosts(), visual, delay);
-		exec.runGame(new MCTSNIELS(), new Legacy(), visual, delay);
+		//exec.runGame(new MCTSNIELS(), new Legacy(), visual, delay);
 		//exec.runGame(new QLearner(), new Legacy(), visual, delay);
 		
+		for(int i = 0; i < 15; i++){
+			exec.runGame(new GeneticPacman2(new Genome(473, 3.1854737562458, 688, 9768, -8513, 3055, 521, 79, 4)),new Legacy2TheReckoning(),false,delay);
+		}
+		
+		//[pillValue=473, pillMultiplier=3.1854737562458, powerPillValue=688, ghostValue=9768, deathValue=-8513, winValue=3055, stepValue=521, dangerDistance=79, killDistance=4, mutated=0]
+
 		///*
 		//run the game in asynchronous mode.
 		//boolean visual=true;
@@ -170,6 +176,9 @@ public class Executor
 	        if(visual)
 	        	gv.repaint();
 		}
+		
+		System.out.println(game.getScore());
+		
 	}
 	
 	/**
