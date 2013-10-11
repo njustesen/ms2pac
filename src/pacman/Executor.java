@@ -80,8 +80,10 @@ public class Executor
 		//exec.runGame(new MCTSNIELS(), new Legacy(), visual, delay);
 		//exec.runGame(new QLearner(), new Legacy(), visual, delay);
 		
-		for(int i = 0; i < 15; i++){
-			exec.runGame(new GeneticPacman2(new Genome(473, 3.1854737562458, 688, 9768, -8513, 3055, 521, 79, 4)),new Legacy2TheReckoning(),false,delay);
+		for(int i = 0; i < 10; i++){
+			System.out.print(i + "\t");
+			exec.runGame(new MCTSNIELS(), new Legacy(), false, delay);
+			//exec.runGame(new GeneticPacman2(new Genome(473, 3.1854737562458, 688, 9768, -8513, 3055, 521, 79, 4)),new Legacy2TheReckoning(),false,delay);
 		}
 		
 		//[pillValue=473, pillMultiplier=3.1854737562458, powerPillValue=688, ghostValue=9768, deathValue=-8513, winValue=3055, stepValue=521, dangerDistance=79, killDistance=4, mutated=0]

@@ -34,7 +34,7 @@ public class MCTSNIELS extends Controller<MOVE>{
 	public static final int LOST_LIFE_VALUE = -500;
 	private static final int SIM_STEPS = 200;
 	private static final int TREE_TIME_LIMIT = 55;
-	private static final int MISSUSE_OF_POWER_PILL = -100;
+	private static final int MISSUSE_OF_POWER_PILL = -50;
 	private static final int GHOST_DISTANCE = 200;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
@@ -57,7 +57,7 @@ public class MCTSNIELS extends Controller<MOVE>{
 		
 		lastLevel = level;
 		
-		return MctsSearch(game, 36);
+		return MctsSearch(game, 38);
 		
 	}
 
@@ -84,8 +84,10 @@ public class MCTSNIELS extends Controller<MOVE>{
 		if (bestNode != null)
 			move = bestNode.getMove();
 		
-		//System.out.println(v0.print(0));
-		//System.out.println(move);
+		/*
+		System.out.println(v0.print(0));
+		System.out.println(move);
+		*/
 		
 		return move;
 		
@@ -114,6 +116,7 @@ public class MCTSNIELS extends Controller<MOVE>{
 		
 		for(MctsNode node : v.children){
 			float value = UCT(node, c);
+			
 			if (!node.getState().isAlive())
 				value = -99999;
 			

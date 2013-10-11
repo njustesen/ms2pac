@@ -7,6 +7,7 @@ import java.util.List;
 import pacman.Executor;
 import pacman.controllers.Controller;
 import pacman.controllers.examples.AggressiveGhosts;
+import pacman.controllers.examples.Legacy2TheReckoning;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
 import pacman.game.Constants.MOVE;
@@ -117,7 +118,7 @@ public class MctsNode {
 				return new MctsState(false, clone);
 
 			if (now == last){
-				System.out.println("ERROR: Junction not found");
+				//System.out.println("ERROR: Junction not found");
 				break;
 			}
 			
