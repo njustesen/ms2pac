@@ -20,6 +20,7 @@ import pacman.controllers.Controller;
 import pacman.controllers.examples.AggressiveGhosts;
 import pacman.controllers.examples.Legacy;
 import pacman.controllers.examples.Legacy2TheReckoning;
+import pacman.controllers.examples.RandomGhosts;
 import pacman.controllers.examples.StarterGhosts;
 import pacman.game.Constants.DM;
 import pacman.game.Constants.GHOST;
@@ -38,7 +39,7 @@ public class MCTSNIELS extends Controller<MOVE>{
 	private static final int GHOST_DISTANCE = 200;
 	// Hoeffding ineqality
 	float C = (float) (1f / Math.sqrt(2));
-	Controller<EnumMap<GHOST,MOVE>> ghosts = new Legacy();
+	Controller<EnumMap<GHOST,MOVE>> ghosts = new RandomGhosts();
 	
 	public static Set<Integer> junctions;
 	int lastLevel = 1;

@@ -80,9 +80,10 @@ public class Executor
 		//exec.runGame(new MCTSNIELS(), new Legacy(), visual, delay);
 		//exec.runGame(new QLearner(), new Legacy(), visual, delay);
 		
-		for(int i = 0; i < 10; i++){
+		for(int i = 1; i <= 40; i++){
 			System.out.print(i + "\t");
-			exec.runGame(new MCTSNIELS(), new Legacy(), false, delay);
+			Executor execi=new Executor();
+			execi.runGame(new MCTSNIELS(), new Legacy(), true, delay);
 			//exec.runGame(new GeneticPacman2(new Genome(473, 3.1854737562458, 688, 9768, -8513, 3055, 521, 79, 4)),new Legacy2TheReckoning(),false,delay);
 		}
 		
